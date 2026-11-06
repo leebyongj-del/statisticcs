@@ -1,0 +1,1357 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>우리반 통계 실험실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: 모눈종이 위에 놓인 교과서 탐구 활동지 — 상단 단원 탭, 한 열짜리 활동 카드 */
+:root{
+  --bg:#F2F5F3; --paper:#FFFFFF; --ink:#16232C; --muted:#56666D; --line:#D3DCD8; --grid:#E3EAE6;
+  --accent:#1D6F55; --accent-ink:#FFFFFF; --accent-soft:#DCEEE6;
+  --a:#2C58C4; --a-soft:#E2E9FA; --b:#C44C2C; --b-soft:#F7E2DA;
+  --hl:#FFE47A; --hl-ink:#4D3B00; --warn:#9A5B00; --warn-soft:#FBEFD9;
+  --f-display:"Do Hyeon","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F1715; --paper:#16211E; --ink:#E5EEEA; --muted:#98AAA3; --line:#2B3A35; --grid:#1B2724;
+  --accent:#5BC49B; --accent-ink:#0B1A14; --accent-soft:#1C3A2F;
+  --a:#86A6FF; --a-soft:#1E2A47; --b:#FF8E6D; --b-soft:#45261C;
+  --hl:#5E5012; --hl-ink:#FFF2BD; --warn:#F2B661; --warn-soft:#3A2C14; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F1715; --paper:#16211E; --ink:#E5EEEA; --muted:#98AAA3; --line:#2B3A35; --grid:#1B2724;
+  --accent:#5BC49B; --accent-ink:#0B1A14; --accent-soft:#1C3A2F;
+  --a:#86A6FF; --a-soft:#1E2A47; --b:#FF8E6D; --b-soft:#45261C;
+  --hl:#5E5012; --hl-ink:#FFF2BD; --warn:#F2B661; --warn-soft:#3A2C14; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;background-attachment:fixed}
+.wrap{max-width:1060px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 20px;margin-bottom:14px}
+h1{font-family:var(--f-display);font-weight:400;font-size:2.1rem;line-height:1.1;margin:0;letter-spacing:.01em}
+h1 small{display:block;font-family:var(--f-body);font-size:.9rem;color:var(--muted);letter-spacing:0;margin-top:6px}
+.live{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.dot.on{background:var(--accent)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:2px solid var(--ink);margin-bottom:16px;scrollbar-width:thin}
+nav.tabs button{flex:0 0 auto;font:inherit;font-size:.95rem;border:0;background:transparent;color:var(--muted);padding:10px 14px 9px;cursor:pointer;border-radius:8px 8px 0 0;white-space:nowrap}
+nav.tabs button:hover{color:var(--ink);background:var(--paper)}
+nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg);font-weight:700}
+nav.tabs .unit{font-family:var(--f-num);font-size:.75rem;opacity:.7;margin-right:6px}
+button,select,input,textarea{font:inherit}
+:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:16px}
+.toolbar label{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted);min-width:0}
+select,input[type=number],input[type=text],textarea{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;max-width:100%}
+select{min-width:0}
+textarea{width:100%;font-family:var(--f-num);font-size:.92rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.count{margin-left:auto;font-family:var(--f-num);font-size:.9rem;color:var(--muted)}
+.stack{display:grid;gap:16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 20px;min-width:0}
+.card h2{font-family:var(--f-display);font-weight:400;font-size:1.5rem;margin:0 0 8px;line-height:1.25;text-wrap:balance}
+.card h3{font-size:1.05rem;margin:14px 0 6px}
+.lead{color:var(--muted);margin:0 0 10px;max-width:68ch}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;color:var(--accent);font-weight:700}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.rep{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--bg);display:flex;flex-direction:column;gap:6px;min-width:0}
+.rep.best{border:2px solid var(--accent);background:var(--accent-soft)}
+.rep .name{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}
+.big{font-family:var(--f-num);font-size:2rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.big small{font-size:1rem;font-weight:400;color:var(--muted);margin-left:4px}
+.calc{font-family:var(--f-num);font-size:.88rem;color:var(--muted);overflow-wrap:anywhere}
+.badge{font-size:.75rem;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.badge.good{background:var(--accent);color:var(--accent-ink)}
+.badge.mid{background:var(--warn-soft);color:var(--warn)}
+.badge.bad{background:var(--line);color:var(--muted)}
+.badge.ex{background:var(--warn-soft);color:var(--warn)}
+.badge.live{background:var(--accent-soft);color:var(--accent)}
+.verdict{border-left:6px solid var(--accent);background:var(--accent-soft);border-radius:0 12px 12px 0;padding:14px 18px}
+.verdict .title{font-family:var(--f-display);font-size:1.4rem;line-height:1.3}
+ol.reasons,ol.steps{margin:8px 0 0;padding-left:1.4em;display:grid;gap:6px}
+ol.steps li::marker{font-family:var(--f-num);font-weight:600;color:var(--accent)}
+.vals{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.v{font-family:var(--f-num);font-size:.92rem;padding:2px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line);font-variant-numeric:tabular-nums;position:relative}
+.v.med{background:var(--hl);color:var(--hl-ink);border-color:var(--hl);font-weight:600}
+.v.mode{outline:2px solid var(--a);outline-offset:-2px}
+.v.ext{background:var(--b-soft);color:var(--b);border-color:var(--b);font-weight:600}
+.v.ga{border-bottom:3px solid var(--a)} .v.gb{border-bottom:3px solid var(--b)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.82rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:14px;height:14px;border-radius:4px;display:inline-block;border:1px solid var(--line)}
+.scroll{overflow-x:auto}
+table.t{border-collapse:collapse;min-width:100%;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border:1px solid var(--ink);padding:7px 14px;text-align:center}
+table.t thead th{background:var(--accent-soft);font-weight:700}
+table.t tfoot td{font-weight:700;background:var(--bg)}
+table.t td.num{font-family:var(--f-num)}
+table.t td.tally{font-size:1.05rem;letter-spacing:.1em;text-align:left}
+table.t tr.hot td{background:var(--hl);color:var(--hl-ink)}
+.stem{border-collapse:collapse;font-family:var(--f-num);font-size:1.3rem}
+.stem td{padding:4px 14px;vertical-align:top}
+.stem td.s{text-align:right;border-right:2px solid var(--ink);font-weight:600}
+.stem td.l{letter-spacing:.35em;white-space:nowrap}
+.stem th{font-family:var(--f-body);font-size:.85rem;color:var(--muted);font-weight:500;padding:0 14px 6px;border-bottom:2px solid var(--ink)}
+.stem th:first-child{border-right:2px solid var(--ink)}
+.key{font-family:var(--f-num);font-size:.95rem;margin-top:8px}
+.crit{display:grid;gap:8px}
+.crit .row{display:grid;grid-template-columns:minmax(120px,190px) 1fr auto;gap:10px;align-items:start;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line)}
+.crit .row b{font-size:.92rem}
+.crit .row .why{font-size:.9rem;color:var(--muted);min-width:0}
+@media (max-width:560px){.crit .row{grid-template-columns:1fr}}
+svg.chart{width:100%;height:auto;display:block;max-width:100%}
+svg .ax{stroke:var(--ink);stroke-width:1.5}
+svg .gl{stroke:var(--line);stroke-width:1}
+svg .tx{fill:var(--ink);font-family:var(--f-num);font-size:13px}
+svg .tm{fill:var(--muted);font-family:var(--f-body);font-size:13px}
+svg .bar{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+svg .ghost{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 4}
+svg .lbl{fill:var(--accent);font-family:var(--f-num);font-size:13px;font-weight:600}
+.stepper{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 10px}
+.stepper .chip{font-size:.85rem}
+.note{font-size:.88rem;color:var(--muted)}
+.banner{border-radius:12px;padding:12px 16px;margin-bottom:16px;background:var(--warn-soft);color:var(--ink);border:1px solid var(--line)}
+.banner b{color:var(--warn)}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:9px 16px;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:var(--b);color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted);min-width:0}
+.form .wide{grid-column:1/-1}
+.row-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.survey-item{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--bg);display:grid;gap:10px}
+.ans-q{font-family:var(--f-display);font-size:1.9rem;line-height:1.25;margin:6px 0 12px}
+.ans-input{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ans-input input{font-family:var(--f-num);font-size:2rem;width:min(220px,100%);padding:8px 12px}
+.ans-input .u{font-size:1.4rem}
+.msg{font-weight:700;color:var(--accent)} .msg.err{color:var(--b)}
+.mini{font-size:.8rem}
+.cmpkey{display:flex;gap:16px;flex-wrap:wrap;font-weight:700}
+.cmpkey .a{color:var(--a)} .cmpkey .b{color:var(--b)}
+td.ca{color:var(--a);font-family:var(--f-num)} td.cb{color:var(--b);font-family:var(--f-num)}
+.insight{background:var(--hl);color:var(--hl-ink);border-radius:12px;padding:12px 16px;font-weight:500}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:720px){.split{grid-template-columns:1fr}}
+.hdr-right{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.who{display:flex;align-items:center;gap:8px;font-size:.85rem}
+.who .role{font-weight:700;border-radius:999px;padding:3px 10px;background:var(--accent-soft);color:var(--accent)}
+.who button{font:inherit;font-size:.82rem;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:3px 10px;cursor:pointer}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:8px}
+.role-card{text-align:left;font:inherit;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:26px 24px;cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0}
+.role-card:hover{border-color:var(--accent)}
+.role-card .r-name{font-family:var(--f-display);font-size:2.2rem;line-height:1.1}
+.role-card .r-desc{color:var(--muted)}
+.role-card .r-go{margin-top:6px;font-weight:700;color:var(--accent)}
+.role-card.st .r-name{color:var(--a)} .role-card.st:hover{border-color:var(--a)} .role-card.st .r-go{color:var(--a)}
+.pin{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
+.pin input{font-family:var(--f-num);font-size:1.8rem;letter-spacing:.3em;width:min(240px,100%);padding:8px 12px;text-align:center}
+.welcome{font-family:var(--f-display);font-size:2rem;line-height:1.25;margin:4px 0 6px}
+.q-form{display:grid;gap:18px}
+.q-step{display:grid;gap:8px}
+.q-label{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem}
+.q-num{font-family:var(--f-num);width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:inline-grid;place-items:center;font-size:.9rem}
+.q-step .chip{font-size:1.05rem;padding:8px 18px}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.opts .chip.opt{font-family:var(--f-num);font-size:1.05rem;padding:10px 6px;border-radius:10px;text-align:center}
+.ans-input.small input{font-size:1.4rem;width:110px}
+.big-btn{font-size:1.1rem;padding:12px 28px}
+.share{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;border-radius:12px;padding:10px 14px;margin-bottom:14px;background:var(--paper);border:1px dashed var(--line)}
+.share.on{background:var(--a-soft);border:2px solid var(--a)}
+.share b{font-size:.95rem}
+.share-what{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.share-act{margin-left:auto}
+.share-hint{flex-basis:100%}
+.share-dot{width:10px;height:10px;border-radius:50%;background:var(--a);display:inline-block}
+@media (prefers-reduced-motion:no-preference){ .share-dot{animation:blink 1.6s ease-in-out infinite} @keyframes blink{50%{opacity:.25}} }
+@media (prefers-reduced-motion:no-preference){ svg .anim{transition:opacity .3s} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>우리반 통계 실험실<small>중학교 1학년 · 자료의 정리와 해석</small></h1>
+    <div class="hdr-right"><div class="live" id="live"><span class="dot"></span><span>연결 확인 중</span></div><div id="who"></div></div>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+  <div id="share"></div>
+  <div id="banner"></div>
+  <div id="toolbar"></div>
+  <main id="main" class="stack"></main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+/* ---------- 예시 자료 (수업 시연용, 실제 학생 자료 아님) ---------- */
+const ex = (g, arr) => arr.map((v, i) => ({ v, g, s: i % 2 ? '여' : '남' }));
+const exc = (g, obj) => ex(g, Object.entries(obj).flatMap(([k, n]) => Array(n).fill(k)));
+const MBTI = ['ISTJ','ISFJ','INFJ','INTJ','ISTP','ISFP','INFP','INTP','ESTP','ESFP','ENFP','ENTP','ESTJ','ESFJ','ENFJ','ENTJ'];
+const SUBJECTS = ['국어','영어','수학','과학','사회','체육','음악','미술','기술·가정','정보'];
+const SAMPLES = [
+  { id:'ex-jump', sample:true, title:'1분 동안 줄넘기 횟수', unit:'회', decimals:0, kind:'measure', groups:['1반','2반'],
+    values:[...ex('1반',[68,75,79,82,85,88,91,93,95,96,98,101,103,104,107,109,112,114,118,121,125,129,134,142]),
+            ...ex('2반',[62,66,71,73,77,78,81,83,84,86,87,89,90,92,94,95,97,99,100,102,105,106,108,110,113,115,117,120,123,127,131,138])] },
+  { id:'ex-commute', sample:true, title:'등교하는 데 걸리는 시간', unit:'분', decimals:0, kind:'measure', groups:[],
+    values:ex('',[5,7,8,8,10,10,10,12,12,13,15,15,15,15,18,20,20,25,70,85]) },
+  { id:'ex-shoe', sample:true, title:'신발 크기', unit:'mm', decimals:0, kind:'choice', groups:[],
+    values:ex('',[225,230,230,230,235,235,235,235,240,240,240,240,240,240,240,245,245,245,245,245,250,250,250,255,255,260]) },
+  { id:'ex-mbti', sample:true, title:'나의 MBTI', unit:'', type:'category', options:MBTI, kind:'choice', groups:['1반','2반'],
+    values:[...exc('1반',{ENFP:4,INFP:3,ISFJ:3,ESFJ:2,INTP:2,ENTP:2,ISTJ:2,ESTP:1,INFJ:1,ENFJ:2,ISFP:2}),
+            ...exc('2반',{ENFP:4,ISFP:4,INFP:3,ESTJ:3,ISTJ:3,ESFP:2,INTJ:2,ENTJ:1,ISFJ:2,ESFJ:2,ISTP:2})] },
+];
+const PRESETS = [
+  { title:'1분 동안 줄넘기 횟수', unit:'회', decimals:0, min:0, max:300, kind:'measure' },
+  { title:'하루 평균 수면 시간', unit:'시간', decimals:1, min:0, max:15, kind:'measure' },
+  { title:'등교하는 데 걸리는 시간', unit:'분', decimals:0, min:0, max:180, kind:'measure' },
+  { title:'신발 크기', unit:'mm', decimals:0, min:180, max:320, kind:'choice' },
+  { title:'키', unit:'cm', decimals:1, min:100, max:200, kind:'measure' },
+  { title:'나의 MBTI', unit:'', type:'category', options:MBTI, kind:'choice' },
+  { title:'가장 좋아하는 과목', unit:'', type:'category', options:SUBJECTS, kind:'choice' },
+];
+
+/* ---------- 상태 ---------- */
+const TABS = [
+  ['submit','응답하기',''],['data','자료','1'],['rep','대푯값','2'],['stem','줄기와 잎 그림','3'],
+  ['table','도수분포표','4'],['graph','히스토그램·다각형','5'],['rel','상대도수','6'],['admin','설문 관리','']
+];
+const S = {
+  db:null, user:null, uid:null, canEdit:false, canWrite:null, dbState:'loading',
+  surveys:{}, answers:[], cur:'ex-jump', group:'전체', width:{}, tab:null,
+  step:5, polyOnly:false, whatIf:null, cmpA:null, cmpB:null, cmpMode:'count', thr:null,
+  submitSid:null, submitGroup:null, submitMsg:null, confirm:null, adminMsg:null, tally:true,
+  local:{ title:'직접 입력한 자료', unit:'', kind:'measure', values:[] },
+  role:null, pinMsg:null, shown:null, shareMsg:null, sex:'전체', cmpBy:'g', submitSex:null, submitCat:null, nvType:'number', thrCat:null
+};
+const PIN_HASH = '5dbbc229315d3018c570ed53839b01ec6bcceb25838e2f2f35c85890db7fe24e';
+try { const r = localStorage.getItem('statlab-role'); if (r === 'teacher' || r === 'student') S.role = r; } catch(e) {}
+function setRole(r){ S.role = r; try { r ? localStorage.setItem('statlab-role', r) : localStorage.removeItem('statlab-role'); } catch(e) {} }
+async function checkPin(pin){
+  try { const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('') === PIN_HASH;
+  } catch(e) { return pin === String(130408); }
+}
+const TEACHER_TABS = ['data','rep','stem','table','graph','rel','admin'];
+const SHOW_TABS = ['data','rep','stem','table','graph','rel'];
+const tabLabel = id => (TABS.find(t => t[0] === id) || [,''])[1];
+/* 선생님이 학생에게 보여 주는 화면 (저장소 control/live) */
+function shownTab(){ const sh = S.shown; return sh && sh.on && SHOW_TABS.includes(sh.tab) ? sh.tab : null; }
+function sharePayload(){
+  const tab = SHOW_TABS.includes(S.tab) ? S.tab : (shownTab() || 'data');
+  const cur = curSurvey().id;
+  return { on:true, tab, cur, group:S.group, sex:S.sex, width:S.width[cur] || null,
+           local: cur === 'local' ? { title:S.local.title, unit:S.local.unit, kind:S.local.kind, values:S.local.values } : null };
+}
+let lastShareKey = null, shareTimer = null;
+function pushShown(){
+  if (S.role !== 'teacher' || !S.db || !S.canEdit || !shownTab() || !SHOW_TABS.includes(S.tab)) return;
+  const body = sharePayload(); const key = JSON.stringify(body);
+  const sh = S.shown; const curKey = JSON.stringify({ on:sh.on, tab:sh.tab, cur:sh.cur, group:sh.group, sex:sh.sex, width:sh.width ?? null, local:sh.local ?? null });
+  if (key === curKey || key === lastShareKey) return;
+  clearTimeout(shareTimer);
+  shareTimer = setTimeout(async () => {
+    lastShareKey = key;
+    try { await S.db.doc('control/live').set({ ...body, at:Date.now() }); }
+    catch (e) { lastShareKey = null; S.shareMsg = '학생 화면을 바꾸지 못했어요. 교사 구글 계정으로 로그인했는지 확인해 주세요.'; render(); }
+  }, 350);
+}
+function applyShown(){
+  const sh = S.shown; if (!sh) return;
+  if (sh.local) S.local = sh.local;
+  S.cur = sh.cur || S.cur; S.group = sh.group || '전체'; S.sex = sh.sex || '전체';
+  if (sh.width) S.width[S.cur] = sh.width;
+}
+try { const l = JSON.parse(localStorage.getItem('statlab-local')||'null'); if (l && Array.isArray(l.values)) S.local = l; } catch(e) {}
+function saveLocal(){ try { localStorage.setItem('statlab-local', JSON.stringify(S.local)); } catch(e) {} }
+
+/* ---------- 도우미 ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const R = x => Math.round(x * 1e6) / 1e6;
+const fmt = (x, d = 2) => isFinite(x) ? String(Number(x.toFixed(d))) : '-';
+const decOf = x => { const s = String(x); const i = s.indexOf('.'); return i < 0 ? 0 : s.length - i - 1; };
+const uniq = a => [...new Set(a)];
+const SEXES = ['남','여'];
+const sexLabel = x => x === '남' ? '남학생' : x === '여' ? '여학생' : x;
+const isCat = s => s && s.type === 'category';
+// 글자 답은 대소문자를 구분하지 않아요: 보기와 맞으면 보기 표기로, 아니면 대문자로 통일
+function canon(v, opts){ const t = String(v).trim(); const m = (opts || []).find(o => o.toUpperCase() === t.toUpperCase()); return m || t.toUpperCase(); }
+const uniqCanon = arr => { const seen = new Set(); return arr.filter(x => { const k = x.toUpperCase(); if (seen.has(k)) return false; seen.add(k); return true; }); };
+const dv = v => typeof v === 'number' ? fmt(v,2) : esc(v);
+function sexesOf(rows){ return SEXES.filter(x => rows.some(r => r.s === x)); }
+function catOrder(s, vals){ const o = (s.options || []).slice(); return [...o, ...uniq(vals.filter(v => !o.includes(v))).sort()]; }
+function catCounts(cats, vals){ return cats.map(c => vals.filter(v => v === c).length); }
+function scopeLabel(){ return [S.group !== '전체' ? S.group : '', S.sex !== '전체' ? sexLabel(S.sex) : ''].filter(Boolean).map(x => ' · ' + esc(x)).join(''); }
+function meanText(m){ return Math.abs(m*100 - Math.round(m*100)) < 1e-9 ? fmt(m,2) : '약 ' + fmt(m,1); }
+
+function liveSurveys(){
+  return Object.entries(S.surveys).map(([id,d]) => ({ id, ...d, live:true }))
+    .sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+}
+function localSurvey(){
+  const vals = S.local.values;
+  const cat = vals.some(r => typeof r.v === 'string');
+  const d = cat ? 0 : Math.min(2, Math.max(0, ...vals.map(r => decOf(r.v))));
+  return { id:'local', local:true, title:S.local.title || '직접 입력한 자료', unit:S.local.unit||'', decimals:d,
+           type: cat ? 'category' : 'number', options: cat ? uniq(vals.map(r => canon(r.v))).sort() : [],
+           kind: cat ? 'choice' : (S.local.kind||'measure'), groups:uniq(vals.map(r=>r.g).filter(Boolean)) };
+}
+function allSurveys(){ return [...liveSurveys(), localSurvey(), ...SAMPLES]; }
+function curSurvey(){ const all = allSurveys(); return all.find(s => s.id === S.cur) || all.find(s=>s.live) || SAMPLES[0]; }
+function rowsOf(s){
+  if (s.sample) return s.values;
+  if (s.local) return isCat(localSurvey()) ? S.local.values.map(r => ({ ...r, v:canon(r.v) })) : S.local.values;
+  const cat = isCat(s);
+  const fix = v => cat && typeof v === 'string' ? canon(v, s.options) : v;
+  const rows = (s.manual || []).map(x => ({ v:fix(x.v), g:x.g || '', s:x.s || '' }));
+  for (const a of S.answers) {
+    const x = a.data && a.data[s.id];
+    if (!x || (x.t || 0) < (s.resetAt || 0)) continue;
+    if (cat ? typeof x.v === 'string' : typeof x.v === 'number') rows.push({ v:fix(x.v), g:x.g || '', s:x.s || '' });
+  }
+  return rows;
+}
+function groupsOf(s, rows){ return uniq([...(s.groups||[]), ...rows.map(r=>r.g).filter(Boolean)]); }
+function filtered(s){
+  const rows = rowsOf(s); const gs = groupsOf(s, rows); const xs = sexesOf(rows);
+  if (S.group !== '전체' && !gs.includes(S.group)) S.group = '전체';
+  if (S.sex !== '전체' && !xs.includes(S.sex)) S.sex = '전체';
+  return rows.filter(r => (S.group === '전체' || r.g === S.group) && (S.sex === '전체' || r.s === S.sex));
+}
+
+/* ---------- 통계 계산 ---------- */
+function stats(vals){
+  const a = [...vals].sort((x,y) => x - y), n = a.length;
+  if (!n) return { n:0, a };
+  const sum = R(a.reduce((s,x) => s + x, 0)), mean = sum / n;
+  const median = n % 2 ? a[(n-1)/2] : R((a[n/2-1] + a[n/2]) / 2);
+  const cnt = new Map(); a.forEach(x => cnt.set(x, (cnt.get(x)||0) + 1));
+  const maxC = Math.max(...cnt.values());
+  const allSame = [...cnt.values()].every(c => c === maxC);
+  const modes = (allSame && cnt.size > 1) ? [] : [...cnt.entries()].filter(([,c]) => c === maxC).map(([v]) => v);
+  const half = Math.floor(n/2);
+  const med = arr => arr.length % 2 ? arr[(arr.length-1)/2] : (arr[arr.length/2-1] + arr[arr.length/2]) / 2;
+  const q1 = n >= 4 ? med(a.slice(0, half)) : a[0], q3 = n >= 4 ? med(a.slice(n - half)) : a[n-1];
+  const iqr = q3 - q1;
+  const ext = (n >= 6 && iqr > 0) ? a.filter(x => x < q1 - 1.5*iqr || x > q3 + 1.5*iqr) : [];
+  return { n, a, sum, mean, median, cnt, maxC, modes, min:a[0], max:a[n-1], ext };
+}
+
+function niceWidths(d){
+  const base = [0.1,0.2,0.5,1,2,5,10,15,20,25,30,50,100,200,500];
+  return base.filter(w => w >= Math.pow(10,-d) - 1e-9);
+}
+function classCount(min, max, w){ return Math.floor(R(max/w) + 1e-9) - Math.floor(R(min/w) + 1e-9) + 1; }
+function autoWidth(min, max, d){
+  const ws = niceWidths(d);
+  if (max === min) return ws[0];
+  return ws.find(w => { const k = classCount(min,max,w); return k >= 5 && k <= 10; })
+      || ws.find(w => classCount(min,max,w) <= 15) || ws[ws.length-1];
+}
+function widthFor(s, vals){
+  const d = s.decimals || 0; const mn = Math.min(...vals), mx = Math.max(...vals);
+  const opts = niceWidths(d).filter(w => { const k = classCount(mn,mx,w); return k >= 3 && k <= 15; });
+  let w = S.width[s.id];
+  if (!w || !opts.includes(w)) w = autoWidth(mn, mx, d);
+  return { w, opts: opts.length ? opts : [w] };
+}
+function makeClasses(vals, w){
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const start = R(Math.floor(R(mn/w) + 1e-9) * w);
+  const k = classCount(mn, mx, w);
+  const cls = [];
+  for (let i = 0; i < k; i++) cls.push({ lo:R(start + i*w), hi:R(start + (i+1)*w), c:0 });
+  for (const v of vals) { const i = Math.floor(R((v - start)/w) + 1e-9); if (cls[i]) cls[i].c++; }
+  return cls;
+}
+function countIn(vals, cls){ return cls.map(c => vals.filter(v => v >= c.lo - 1e-9 && v < c.hi - 1e-9).length); }
+function tally(c){ return '正'.repeat(Math.floor(c/5)) + ['','一','丅','下','止'][c % 5]; }
+
+function stemLeaf(vals, d){
+  const dd = Math.min(d, 1), f = Math.pow(10, dd);
+  const ints = vals.map(v => Math.round(v * f));
+  const rows = new Map();
+  ints.forEach(x => { const s = Math.floor(x/10), l = x % 10; if (!rows.has(s)) rows.set(s, []); rows.get(s).push(l); });
+  const stems = [...rows.keys()]; const lo = Math.min(...stems), hi = Math.max(...stems);
+  const out = [];
+  for (let s = lo; s <= hi; s++) out.push({ s, leaves:(rows.get(s) || []).sort((a,b)=>a-b) });
+  const sample = [...vals].sort((a,b)=>a-b)[0];
+  const sx = Math.round(sample * f);
+  return { rows:out, dd, key:{ s:Math.floor(sx/10), l:sx % 10, v:sample } };
+}
+
+/* ---------- 차트 (SVG) ---------- */
+function niceStep(max, rel){
+  const steps = rel ? [0.02,0.05,0.1,0.2,0.25,0.5] : [1,2,5,10,20,50,100];
+  return steps.find(s => max / s <= 8) || steps[steps.length-1];
+}
+function chart(o){
+  const { cls, w, series, rel = false, bars = true, step = 5, unit = '', ylab } = o;
+  const W = 720, H = 400, ml = 62, mr = 22, mt = 26, mb = 64;
+  const lo0 = cls[0].lo - w, hi0 = cls[cls.length-1].hi + w;
+  const X = v => ml + (v - lo0) / (hi0 - lo0) * (W - ml - mr);
+  const ser = series.map(s => ({ ...s, y: s.counts.map(c => rel ? c / s.total : c) }));
+  const ymaxRaw = Math.max(...ser.flatMap(s => s.y), rel ? 0.05 : 1);
+  const st = niceStep(ymaxRaw, rel), ymax = Math.ceil(R(ymaxRaw / st)) * st;
+  const Y = v => H - mb - v / ymax * (H - mt - mb);
+  let g = '';
+  for (let t = 0; t <= ymax + 1e-9; t = R(t + st)) {
+    g += `<line class="gl" x1="${ml}" x2="${W-mr}" y1="${Y(t)}" y2="${Y(t)}"/>`;
+    g += `<text class="tx" x="${ml-8}" y="${Y(t)+4}" text-anchor="end">${fmt(t,2)}</text>`;
+  }
+  const bounds = [...cls.map(c => c.lo), cls[cls.length-1].hi];
+  bounds.forEach(b => { g += `<line class="ax" x1="${X(b)}" x2="${X(b)}" y1="${H-mb}" y2="${H-mb+5}"/><text class="tx" x="${X(b)}" y="${H-mb+21}" text-anchor="middle">${fmt(b,2)}</text>`; });
+  if (step >= 4) [lo0, hi0].forEach(b => { g += `<text class="tm" x="${X(b)}" y="${H-mb+21}" text-anchor="middle">${fmt(b,2)}</text>`; });
+  // 막대
+  if (bars && step >= 2 && ser.length === 1) {
+    cls.forEach((c, i) => {
+      const y = ser[0].y[i];
+      g += `<rect class="bar" x="${X(c.lo)}" y="${Y(y)}" width="${X(c.hi)-X(c.lo)}" height="${Y(0)-Y(y)}"/>`;
+      if (step < 3 || !o.showPoly) g += `<text class="lbl" x="${(X(c.lo)+X(c.hi))/2}" y="${Y(y)-6}" text-anchor="middle">${rel ? fmt(y,2) : y}</text>`;
+    });
+  }
+  // 다각형
+  if (o.showPoly !== false) {
+    ser.forEach(s => {
+      const pts = cls.map((c,i) => [X((c.lo + c.hi)/2), Y(s.y[i])]);
+      const ghostL = [X(cls[0].lo - w/2), Y(0)], ghostR = [X(cls[cls.length-1].hi + w/2), Y(0)];
+      if (step >= 4 && ser.length === 1) {
+        g += `<rect class="ghost" x="${X(lo0)}" y="${Y(0)-2}" width="${X(cls[0].lo)-X(lo0)}" height="2"/><rect class="ghost" x="${X(cls[cls.length-1].hi)}" y="${Y(0)-2}" width="${X(hi0)-X(cls[cls.length-1].hi)}" height="2"/>`;
+      }
+      const all = step >= 4 ? [ghostL, ...pts, ghostR] : pts;
+      if (step >= 5) g += `<polyline fill="none" stroke="${s.color}" stroke-width="2.8" stroke-linejoin="round" points="${all.map(p=>p.join(',')).join(' ')}"/>`;
+      if (step >= 3) all.forEach(p => { g += `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${s.color}" stroke="var(--paper)" stroke-width="1.5"/>`; });
+      if (step >= 5 && (!bars || ser.length > 1)) cls.forEach((c,i) => { if (s.y[i] > 0 && ser.length === 1) g += `<text class="lbl" x="${pts[i][0]}" y="${pts[i][1]-10}" text-anchor="middle">${rel ? fmt(s.y[i],2) : s.y[i]}</text>`; });
+    });
+  }
+  g += `<line class="ax" x1="${ml}" x2="${W-mr}" y1="${Y(0)}" y2="${Y(0)}"/><line class="ax" x1="${ml}" x2="${ml}" y1="${mt-8}" y2="${Y(0)}"/>`;
+  g += `<text class="tm" x="${W-mr}" y="${H-12}" text-anchor="end">(${esc(unit || '변량')})</text>`;
+  g += `<text class="tm" x="${ml-6}" y="${mt-12}" text-anchor="start">${esc(ylab || (rel ? '(상대도수)' : '(도수)'))}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria || '그래프')}">${g}</svg>`;
+}
+
+/* ---------- 화면: 공통 ---------- */
+function renderTabs(){
+  if (S.role === 'student') {
+    const st = shownTab();
+    if (!st) { $('#tabs').innerHTML = ''; $('#tabs').hidden = true; return; }
+    $('#tabs').hidden = false;
+    $('#tabs').innerHTML = `<button role="tab" data-tab="submit" aria-selected="${S.tab==='submit'}">응답하기</button><button role="tab" data-tab="${st}" aria-selected="${S.tab===st}"><span class="unit">선생님 화면</span>${tabLabel(st)}</button>`;
+    return;
+  }
+  if (S.role !== 'teacher' || S.tab === 'pin') { $('#tabs').innerHTML = ''; $('#tabs').hidden = true; return; }
+  $('#tabs').hidden = false;
+  $('#tabs').innerHTML = TABS.filter(t => TEACHER_TABS.includes(t[0])).map(([id,label,num]) =>
+    `<button role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${num ? `<span class="unit">${num}</span>` : ''}${label}</button>`).join('');
+}
+function renderLive(){
+  const el = $('#live'); const n = S.answers.length;
+  const txt = { loading:'연결 확인 중', ready:`실시간 응답 연결됨`, off:'예시·직접 입력 자료로 사용 중', slow:'응답 서버에 아직 연결하지 못했어요', error:'응답 서버 연결이 끊겼어요' }[S.dbState];
+  el.innerHTML = `<span class="dot ${S.dbState==='ready'?'on':''}"></span><span>${txt}</span>`;
+}
+function renderBanner(){
+  let h = '';
+  if (S.dbState === 'off') h = `<div class="banner"><b>${S.authErr ? esc(S.authErr) : '아직 응답 저장소(Firebase)를 연결하지 않았어요.'}</b> 예시 자료와 ‘직접 입력한 자료’로는 모든 기능을 쓸 수 있어요. 다른 곳(구글 설문 등)에서 모은 값을 ‘자료’ 탭에 붙여 넣어 수업할 수 있어요.</div>`;
+  if (S.dbState === 'slow') h = `<div class="banner"><b>응답 서버에 아직 연결하지 못했어요.</b> 인터넷 연결을 확인해 주세요. 연결되면 자동으로 응답이 나타나요.</div>`;
+  $('#banner').innerHTML = h;
+}
+function renderToolbar(){
+  if (S.tab === 'submit' || S.tab === 'admin') { $('#toolbar').innerHTML = ''; return; }
+  if (S.role === 'student') {
+    const s0 = curSurvey(); const scope = [S.group !== '전체' ? S.group : '', S.sex !== '전체' ? sexLabel(S.sex) : ''].filter(Boolean).join(' · ');
+    $('#toolbar').innerHTML = `<div class="toolbar"><span class="note">선생님이 보여 주는 자료</span><b>${esc(s0.title)}</b>${scope ? `<span class="badge live">${esc(scope)}</span>` : ''}<span class="count">${isCat(s0)?'응답':'변량'} ${filtered(s0).length}개</span></div>`;
+    return;
+  }
+  const s = curSurvey(); const rows = rowsOf(s); const gs = groupsOf(s, rows); const xs = sexesOf(rows);
+  const opt = (x, label) => `<option value="${esc(x.id)}" ${x.id===s.id?'selected':''}>${esc(label)}</option>`;
+  const live = liveSurveys(), loc = localSurvey();
+  let sel = '';
+  if (live.length) sel += `<optgroup label="우리 반 설문">${live.map(x => opt(x, x.title + (x.unit?` (${x.unit})`:''))).join('')}</optgroup>`;
+  sel += `<optgroup label="직접 입력">${opt(loc, loc.title + (S.local.values.length?` · ${S.local.values.length}개`:' · 비어 있음'))}</optgroup>`;
+  sel += `<optgroup label="예시 자료">${SAMPLES.map(x => opt(x, '[예시] ' + x.title)).join('')}</optgroup>`;
+  const n = filtered(s).length;
+  $('#toolbar').innerHTML = `<div class="toolbar">
+    <label for="sel-survey">자료 <select id="sel-survey">${sel}</select></label>
+    ${gs.length ? `<div class="chips" role="group" aria-label="반">${['전체', ...gs].map(g => `<button class="chip" data-group="${esc(g)}" aria-pressed="${S.group===g}">${g==='전체'?'모든 반':esc(g)}</button>`).join('')}</div>` : ''}
+    ${xs.length ? `<div class="chips" role="group" aria-label="성별">${['전체', ...xs].map(x => `<button class="chip" data-sex="${x}" aria-pressed="${S.sex===x}">${x==='전체'?'남녀 모두':sexLabel(x)}</button>`).join('')}</div>` : ''}
+    <span class="count">${isCat(s)?'응답':'변량'} ${n}개</span></div>`;
+}
+function emptyCard(s){
+  if (S.role === 'student') return `<section class="card"><h2>아직 응답이 없어요</h2><p class="lead">응답이 모이면 이 화면에 바로 나타나요.</p></section>`;
+  return `<section class="card"><h2>아직 자료가 없어요</h2><p class="lead">${s.live ? '학생들이 ‘응답하기’에서 값을 내면 여기에 바로 나타나요. 선생님은 ‘설문 관리’에서 값을 직접 넣을 수도 있어요.' : '‘자료’ 탭에서 값을 붙여 넣으면 분석을 시작할 수 있어요.'}</p></section>`;
+}
+function unitOf(s){ return s.unit || ''; }
+
+/* ---------- 탭: 응답하기 ---------- */
+function viewSubmit(){
+  if (S.dbState === 'loading') return `<section class="card"><h2>설문을 불러오는 중이에요</h2><p class="lead">잠시만 기다려 주세요.</p></section>`;
+  if (S.dbState === 'off' || !S.db) return `<section class="card"><h2>아직 응답을 받을 수 없어요</h2><p class="lead">응답 저장소가 준비되지 않았어요. 선생님께 알려 주세요.</p></section>`;
+  if (!S.uid) return `<section class="card"><h2>응답 저장소에 접속하는 중이에요</h2><p class="lead">잠시만 기다려 주세요.</p></section>`;
+  const open = liveSurveys().filter(x => x.open);
+  if (!open.length) return `<section class="card"><h2>아직 열린 설문이 없어요</h2><p class="lead">선생님이 설문을 열면 이곳에 질문이 나타나요. 화면을 그대로 두면 자동으로 바뀌어요.</p>${shownTab() ? `<button class="btn" data-tab="${shownTab()}">선생님 화면 ‘${esc(tabLabel(shownTab()))}’ 보러 가기</button>` : ''}</section>`;
+  const s = open.find(x => x.id === S.submitSid) || open[0];
+  if (S.submitSid !== s.id) { S.submitSid = s.id; S.submitCat = null; }
+  const mine = S.answers.find(a => a.id === S.uid); const my = mine && mine.data[s.id];
+  const myOk = my && (my.t||0) >= (s.resetAt||0);
+  const gs = s.groups || []; const cat = isCat(s);
+  if (myOk) { if (S.submitGroup == null) S.submitGroup = my.g || null; if (S.submitSex == null) S.submitSex = my.s || null; if (cat && S.submitCat == null) S.submitCat = my.v; }
+  if (gs.length && S.submitGroup && !gs.includes(S.submitGroup)) S.submitGroup = null;
+  const d = s.decimals || 0;
+  const readonly = S.canWrite === false;
+  const step = (n, label, body) => `<div class="q-step"><div class="q-label"><span class="q-num">${n}</span>${label}</div>${body}</div>`;
+  const classPart = gs.length
+    ? `<div class="chips">${gs.map(g => `<button type="button" class="chip" data-submit-group="${esc(g)}" aria-pressed="${S.submitGroup===g}">${esc(g)}</button>`).join('')}</div>`
+    : `<div class="ans-input small"><input id="ans-class" type="number" min="1" max="30" inputmode="numeric" placeholder="예: 3" value="${S.submitGroup ? parseInt(S.submitGroup,10) || '' : ''}" aria-label="반 번호" ${readonly?'disabled':''}><span class="u">반</span></div>`;
+  const sexPart = `<div class="chips">${SEXES.map(x => `<button type="button" class="chip" data-submit-sex="${x}" aria-pressed="${S.submitSex===x}">${sexLabel(x)}</button>`).join('')}</div>`;
+  const valPart = cat
+    ? `<div class="opts">${(s.options||[]).map(o => `<button type="button" class="chip opt" data-submit-cat="${esc(o)}" aria-pressed="${S.submitCat===o}">${esc(o)}</button>`).join('')}</div><p class="note">보기에서 하나를 골라 주세요.</p>`
+    : `<div class="ans-input"><input id="ans-val" type="number" inputmode="decimal" step="${Math.pow(10,-d)}" ${s.min!=null&&s.min!==''?`min="${s.min}"`:''} ${s.max!=null&&s.max!==''?`max="${s.max}"`:''} placeholder="${d? '예: 7.5':'숫자'}" aria-label="내 값" ${readonly?'disabled':''}><span class="u">${esc(s.unit)}</span></div>
+       <p class="note">${d ? `소수 ${d}째 자리까지 쓸 수 있어요.` : '자연수로 써 주세요.'}</p>`;
+  return `<section class="card">
+    ${open.length > 1 ? `<div class="chips" style="margin-bottom:10px">${open.map(x => `<button class="chip" data-submit-sid="${esc(x.id)}" aria-pressed="${x.id===s.id}">${esc(x.title)}</button>`).join('')}</div>` : ''}
+    <div class="eyebrow">오늘의 설문</div>
+    <div class="ans-q">${esc(s.title)}${s.unit ? ` <span class="note">(단위: ${esc(s.unit)})</span>` : ''}</div>
+    <form id="ans-form" class="q-form">
+      ${step(1, gs.length ? '우리 반을 골라 주세요' : '몇 반인지 써 주세요', classPart)}
+      ${step(2, '성별을 골라 주세요', sexPart)}
+      ${step(3, cat ? '나의 답을 골라 주세요' : '나의 값을 써 주세요', valPart)}
+      <div class="row-actions"><button class="btn big-btn" type="submit" ${readonly?'disabled':''}>${myOk ? '다시 내기' : '내기'}</button><span class="note">이름은 저장되지 않아요.</span></div>
+    </form>
+    ${readonly ? `<p class="msg err">이 링크로는 볼 수만 있어서 응답을 낼 수 없어요. 선생님께 알려 주세요.</p>` : ''}
+    ${myOk ? `<p class="msg">내가 낸 답: ${dv(my.v)}${cat?'':esc(s.unit)}${my.g?` · ${esc(my.g)}`:''}${my.s?` · ${sexLabel(my.s)}`:''} — 다시 내면 이 답이 바뀌어요.</p>` : ''}
+    ${S.submitMsg ? `<p class="msg ${S.submitMsg.err?'err':''}">${esc(S.submitMsg.t)}</p>` : ''}
+  </section>
+  ${shownTab() ? `<section class="card verdict"><div class="eyebrow">선생님 화면</div><div class="title">선생님이 ‘${esc(tabLabel(shownTab()))}’ 화면을 열었어요</div><div style="margin-top:10px"><button class="btn" data-tab="${shownTab()}">보러 가기</button></div></section>` : ''}
+  <section class="card"><h2>지금까지 모인 응답</h2><p class="lead">응답 ${rowsOf(s).length}개가 모였어요. 선생님 화면에서 함께 분석해요.</p></section>`;
+}
+
+/* ---------- 탭: 자료 ---------- */
+function viewData(){
+  const s = curSurvey(); const rows = filtered(s); const all = rowsOf(s); const gs = groupsOf(s, all);
+  const badge = s.sample ? `<span class="badge ex">예시 자료</span>` : s.local ? `<span class="badge ex">직접 입력 · 이 기기에만 저장</span>` : `<span class="badge live">실시간 설문</span>`;
+  const gIdx = g => gs.indexOf(g);
+  let h = `<section class="card">
+    <div class="row-actions">${badge}${s.live ? `<span class="note">${s.open ? '응답 받는 중' : '응답 마감'}</span>` : ''}</div>
+    <h2 style="margin-top:8px">${esc(s.title)}${s.unit?` <span class="note">(${esc(s.unit)})</span>`:''}</h2>
+    <p class="lead">${isCat(s) ? `이 자료는 수가 아니라 <b>항목(글자)</b>으로 된 자료예요. 아래는 지금 모인 응답 ${rows.length}개를 들어온 순서대로 보여 줘요.` : `자료를 수량으로 나타낸 것을 <b>변량</b>이라고 해요. 아래는 지금 모인 변량 ${rows.length}개를 들어온 순서대로 보여 줘요.`}</p>
+    ${gs.length || sexesOf(all).length ? `<div class="legend">${gs.map(g => `<span>${esc(g)} ${all.filter(r=>r.g===g).length}명</span>`).join('')}${sexesOf(all).map(x => `<span>${sexLabel(x)} ${all.filter(r=>r.s===x).length}명</span>`).join('')}</div>` : ''}
+    <div class="vals">${rows.map(r => `<span class="v ${gs.length>1 ? (gIdx(r.g)===0?'ga':gIdx(r.g)===1?'gb':'') : ''}" title="${esc([r.g, sexLabel(r.s||'')].filter(Boolean).join(' '))}">${dv(r.v)}</span>`).join('') || '<span class="note">아직 자료가 없어요.</span>'}</div>
+  </section>`;
+  if (s.local && S.role === 'teacher') {
+    h += `<section class="card"><h2>자료 붙여 넣기</h2>
+      <p class="lead">구글 설문, 엑셀 등에서 모은 값을 붙여 넣으세요. 한 줄에 <code>1반, 남, 72</code>처럼 반·성별·값을 쓰거나 <code>72 85 90</code>처럼 값만 써도 돼요. <code>2반, 여, ENFP</code>처럼 글자로 된 답도 넣을 수 있어요.</p>
+      <div class="form">
+        <label>자료 이름<input id="loc-title" type="text" value="${esc(S.local.title)}"></label>
+        <label>단위<input id="loc-unit" type="text" value="${esc(S.local.unit)}" placeholder="예: 회, 분, cm"></label>
+        <label>자료의 성격<select id="loc-kind"><option value="measure" ${S.local.kind!=='choice'?'selected':''}>재거나 센 값 (키, 시간, 횟수)</option><option value="choice" ${S.local.kind==='choice'?'selected':''}>가장 많은 값이 중요한 자료 (신발·옷 크기)</option></select></label>
+        <label class="wide">값<textarea id="loc-text" rows="6" placeholder="1반, 남, 72&#10;1반, 여, 85&#10;2반, 남, 90">${esc(S.local.values.map(r => (r.g? r.g+', ':'') + (r.s? r.s+', ':'') + r.v).join('\n'))}</textarea></label>
+      </div>
+      <div class="row-actions" style="margin-top:10px"><button class="btn" data-act="loc-save">자료 넣기</button><button class="btn ghost" data-act="loc-clear">모두 지우기</button><span class="note" id="loc-msg"></span></div>
+    </section>`;
+  }
+  if (s.live && S.canEdit && S.role === 'teacher') h += `<section class="card"><p class="lead" style="margin:0">값을 직접 더 넣거나 응답을 마감하려면 <button class="btn ghost" data-tab="admin">설문 관리</button>로 가세요.</p></section>`;
+  return h;
+}
+
+/* ---------- 탭: 대푯값 ---------- */
+function recommendRep(s, st){
+  const u = unitOf(s);
+  const extMsg = st.ext.length ? st.ext.map(x=>fmt(x,2)).join(', ') : '';
+  const gap = Math.abs(st.mean - st.median), range = st.max - st.min || 1;
+  const skew = gap / range > 0.08;
+  const below = st.a.filter(x => x < st.mean).length;
+  const modeShare = st.modes.length ? st.maxC / st.n : 0;
+  let pick, reasons = [], notes = {};
+  if (s.kind === 'choice') {
+    pick = 'mode';
+    reasons.push(`‘${esc(s.title)}’은(는) 가장 많은 사람이 고른 값이 중요한 자료예요. 예를 들어 매점에서 가장 많이 준비해야 할 크기를 정할 때 쓰여요.`);
+    reasons.push(`평균 ${meanText(st.mean)}${u}는 실제로는 없는 값일 수 있어요. 자료에 있는 값으로 대표하는 것이 자연스러워요.`);
+    if (st.modes.length) reasons.push(`최빈값 ${st.modes.map(x=>fmt(x,2)).join(', ')}${u}은(는) ${st.n}개 중 ${st.maxC}개로 가장 많이 나타났어요.`);
+    else reasons.push(`다만 지금 자료는 모든 값의 도수가 같아서 최빈값이 없어요. 자료가 더 모이면 다시 확인해 보세요.`);
+  } else if (st.ext.length || skew) {
+    pick = 'median';
+    if (st.ext.length) reasons.push(`<b>${extMsg}</b>처럼 다른 값들과 동떨어진 <b>극단적인 값</b>이 있어요.`);
+    reasons.push(`평균(${meanText(st.mean)}${u})이 중앙값(${fmt(st.median,2)}${u})보다 ${st.mean > st.median ? '크게' : '작게'} 끌려갔어요. 평균보다 작은 값이 ${st.n}개 중 ${below}개라서 평균이 ‘가운데’를 잘 나타내지 못해요.`);
+    if (st.ext.length) { const rest = st.a.filter(x => !st.ext.includes(x)); const m2 = rest.reduce((a,b)=>a+b,0)/rest.length; reasons.push(`극단적인 값을 빼고 평균을 다시 구하면 ${meanText(m2)}${u}예요. 평균은 극단적인 값 몇 개에 크게 흔들리지만, 중앙값은 거의 변하지 않아요.`); }
+    reasons.push(`중앙값은 값들을 크기순으로 늘어놓았을 때 한가운데 값이라 극단적인 값의 영향을 덜 받아요.`);
+  } else {
+    pick = 'mean';
+    reasons.push(`극단적으로 크거나 작은 값이 없고, 값들이 ${fmt(st.min,2)}${u}부터 ${fmt(st.max,2)}${u}까지 비교적 고르게 퍼져 있어요.`);
+    reasons.push(`평균(${meanText(st.mean)}${u})과 중앙값(${fmt(st.median,2)}${u})의 차이가 ${fmt(gap,2)}${u}로 작아요.`);
+    reasons.push(`평균은 모든 변량을 빠짐없이 계산에 넣기 때문에, 이런 자료에서는 전체를 가장 잘 대표해요.`);
+    if (st.modes.length && modeShare < 0.25) reasons.push(`최빈값은 ${st.n}개 중 ${st.maxC}개만 가진 값이라 자료 전체를 대표하기에는 약해요.`);
+  }
+  notes.mean = pick==='mean' ? ['good','추천'] : (pick==='median' ? ['bad','극단적인 값에 약함'] : ['mid','실제 없는 값일 수 있음']);
+  notes.median = pick==='median' ? ['good','추천'] : (pick==='mean' ? ['mid','쓸 수 있음'] : ['mid','쓸 수 있음']);
+  notes.mode = pick==='mode' ? ['good','추천'] : (!st.modes.length ? ['bad','최빈값 없음'] : (modeShare >= 0.25 ? ['mid','참고할 만함'] : ['bad','대표성 약함']));
+  return { pick, reasons, notes };
+}
+function viewRepNum(){
+  const s = curSurvey(); const rows = filtered(s); const st = stats(rows.map(r=>r.v)); const u = unitOf(s);
+  if (!st.n) return emptyCard(s);
+  const rec = recommendRep(s, st);
+  const n = st.n, odd = n % 2 === 1;
+  const medIdx = odd ? [(n-1)/2] : [n/2-1, n/2];
+  const chips = st.a.map((x,i) => `<span class="v ${medIdx.includes(i)?'med':''} ${st.modes.includes(x)?'mode':''} ${st.ext.includes(x)?'ext':''}">${fmt(x,2)}</span>`).join('');
+  const meanCalc = n <= 12 ? `(${st.a.map(x=>fmt(x,2)).join(' + ')}) ÷ ${n}` : `(변량의 총합 ${fmt(st.sum,2)}) ÷ (변량의 개수 ${n})`;
+  const medCalc = odd ? `${n}개(홀수) → ${(n+1)/2}번째 값` : `${n}개(짝수) → ${n/2}번째와 ${n/2+1}번째 값의 평균: (${fmt(st.a[n/2-1],2)} + ${fmt(st.a[n/2],2)}) ÷ 2`;
+  const modeCalc = st.modes.length ? `가장 많이 나타난 값 · ${st.maxC}번` : `모든 값의 도수가 같아요`;
+  const card = (key, name, val, calc) => `<div class="rep ${rec.pick===key?'best':''}"><div class="name">${name}<span class="badge ${rec.notes[key][0]}">${rec.notes[key][1]}</span></div><div class="big">${val}<small>${esc(u)}</small></div><div class="calc">${calc}</div></div>`;
+  const pickName = { mean:'평균', median:'중앙값', mode:'최빈값' }[rec.pick];
+  let wi = '';
+  if (S.whatIf != null && isFinite(S.whatIf)) {
+    const st2 = stats([...st.a, S.whatIf]);
+    const dm = st2.mean - st.mean, dmed = st2.median - st.median;
+    wi = `<div class="split" style="margin-top:12px">
+      <div class="rep"><div class="name">평균</div><div class="big">${fmt(st.mean,2)} → ${fmt(st2.mean,2)}</div><div class="calc">${dm>=0?'+':''}${fmt(dm,2)}${esc(u)} 움직였어요</div></div>
+      <div class="rep"><div class="name">중앙값</div><div class="big">${fmt(st.median,2)} → ${fmt(st2.median,2)}</div><div class="calc">${dmed>=0?'+':''}${fmt(dmed,2)}${esc(u)} 움직였어요</div></div></div>
+      <p class="insight" style="margin-top:12px">값 ${fmt(S.whatIf,2)}${esc(u)} 하나를 더했더니 평균은 ${fmt(Math.abs(dm),2)}${esc(u)}, 중앙값은 ${fmt(Math.abs(dmed),2)}${esc(u)} 변했어요. ${Math.abs(dm) > Math.abs(dmed) ? '평균이 극단적인 값에 더 크게 흔들린다는 것을 알 수 있어요.' : '이 값은 극단적인 값이 아니어서 둘 다 조금만 변했어요. 아주 큰 값을 넣어 보세요.'}</p>`;
+  }
+  return `
+  <section class="card">
+    <div class="eyebrow">대푯값 · 자료 전체의 특징을 하나의 수로 나타낸 값</div>
+    <h2>${esc(s.title)}${scopeLabel()}의 대푯값</h2>
+    <div class="grid3">
+      ${card('mean','평균', meanText(st.mean), meanCalc + ` = ${fmt(st.mean,3)}`)}
+      ${card('median','중앙값', fmt(st.median,2), medCalc)}
+      ${card('mode','최빈값', st.modes.length ? st.modes.map(x=>fmt(x,2)).join(', ') : '없음', modeCalc)}
+    </div>
+  </section>
+  <section class="card verdict">
+    <div class="eyebrow">이 자료에는</div>
+    <div class="title">${pickName}을(를) 대푯값으로 고르는 것이 알맞아요</div>
+    <ol class="reasons">${rec.reasons.map(r=>`<li>${r}</li>`).join('')}</ol>
+  </section>
+  <section class="card">
+    <h2>크기순으로 늘어놓은 변량</h2>
+    <div class="legend"><span><i class="sw" style="background:var(--hl)"></i>중앙값 자리</span><span><i class="sw" style="outline:2px solid var(--a);outline-offset:-2px"></i>최빈값</span><span><i class="sw" style="background:var(--b-soft);border-color:var(--b)"></i>극단적인 값</span></div>
+    <div class="vals">${chips}</div>
+  </section>
+  <section class="card">
+    <h2>극단적인 값을 하나 넣어 보면?</h2>
+    <p class="lead">아주 크거나 작은 값을 하나 더 넣고 평균과 중앙값이 얼마나 변하는지 비교해 보세요. 원래 자료는 바뀌지 않아요.</p>
+    <div class="row-actions"><input id="whatif" type="number" step="any" placeholder="예: ${fmt(st.max*3,0)}" aria-label="넣어 볼 값" style="width:160px"> <span>${esc(u)}</span>
+      <button class="btn" data-act="whatif">넣어 보기</button>${S.whatIf!=null?`<button class="btn ghost" data-act="whatif-clear">지우기</button>`:''}</div>
+    ${wi}
+  </section>
+  <section class="card">
+    <h2>교과서로 정리하기</h2>
+    <div class="grid3">
+      <div><h3>평균</h3><p class="note">(평균) = (변량의 총합) ÷ (변량의 개수). 모든 변량을 반영하지만 극단적인 값의 영향을 크게 받아요.</p></div>
+      <div><h3>중앙값</h3><p class="note">변량을 작은 값부터 크기순으로 나열할 때 한가운데 있는 값. 변량의 개수가 홀수이면 가운데 값, 짝수이면 가운데 두 값의 평균이에요. 극단적인 값이 있을 때 알맞아요.</p></div>
+      <div><h3>최빈값</h3><p class="note">자료에서 가장 많이 나타나는 값. 여러 개일 수도 있어요. 신발 크기처럼 수량이 아닌 선호를 알아볼 때도 쓸 수 있어요.</p></div>
+    </div>
+  </section>`;
+}
+
+/* ---------- 줄기와 잎 vs 도수분포표 안내 ---------- */
+function organizeAdvice(s, vals){
+  const d = s.decimals || 0, n = vals.length;
+  const sl = stemLeaf(vals, d); const k = sl.rows.length;
+  const crit = [];
+  crit.push({ q:'자료의 개수', val:`${n}개`, pick: n <= 30 ? 'stem' : 'table',
+    why: n <= 30 ? '개수가 많지 않아 잎을 하나하나 써도 한눈에 들어와요.' : '개수가 많아 잎을 모두 쓰면 줄이 너무 길어져요. 구간으로 묶는 편이 보기 쉬워요.' });
+  crit.push({ q:'줄기의 개수', val:`${k}개`, pick: (k >= 3 && k <= 12) ? 'stem' : 'table',
+    why: k < 3 ? '줄기가 너무 적으면 잎이 한 줄에 몰려서 분포가 잘 보이지 않아요.' : k > 12 ? '줄기가 너무 많으면 그림이 길어지고 듬성듬성해져요.' : '줄기 수가 알맞아 분포 모양이 잘 드러나요.' });
+  crit.push({ q:'값의 자릿수', val: d > 1 ? `소수 ${d}째 자리` : d === 1 ? '소수 첫째 자리' : '자연수',
+    pick: d > 1 ? 'table' : 'stem', why: d > 1 ? '자릿수가 많으면 줄기와 잎으로 나누기 어려워요.' : '줄기와 잎으로 나누기 쉬운 값이에요.' });
+  crit.push({ q:'원래 값을 알아야 할 때', val:'', pick:'stem', why:'줄기와 잎 그림은 원래 값이 그대로 남아요. 도수분포표는 계급으로 묶기 때문에 원래 값을 알 수 없어요.' });
+  crit.push({ q:'구간별 인원을 보고 그래프로 이어 갈 때', val:'', pick:'table', why:'도수분포표는 계급별 도수를 바로 읽을 수 있고, 히스토그램과 도수분포다각형으로 이어서 그릴 수 있어요.' });
+  const stemOK = n <= 30 && k >= 3 && k <= 12 && d <= 1;
+  return { crit, pick: stemOK ? 'stem' : 'table', k };
+}
+function adviceCard(s, vals){
+  const a = organizeAdvice(s, vals);
+  const name = { stem:'줄기와 잎 그림', table:'도수분포표' };
+  return `<section class="card verdict">
+    <div class="eyebrow">줄기와 잎 그림일까, 도수분포표일까</div>
+    <div class="title">이 자료는 ${name[a.pick]}${a.pick==='stem'?'으로':'로'} 정리하는 것이 더 알맞아요</div>
+    <div class="crit" style="margin-top:12px">${a.crit.map(c => `<div class="row"><b>${c.q}${c.val?` · ${c.val}`:''}</b><span class="why">${c.why}</span><span class="badge ${c.pick==='stem'?'live':'mid'}">${name[c.pick]} 유리</span></div>`).join('')}</div>
+  </section>`;
+}
+
+/* ---------- 탭: 줄기와 잎 그림 ---------- */
+function viewStemNum(){
+  const s = curSurvey(); const vals = filtered(s).map(r=>r.v); if (!vals.length) return emptyCard(s);
+  const d = s.decimals || 0; const sl = stemLeaf(vals, d); const u = unitOf(s);
+  const keyTxt = `${sl.key.s}|${sl.key.l}은 ${fmt(sl.key.v,2)}${u}`;
+  const place = sl.dd ? ['일의 자리 이상 숫자','소수 첫째 자리 숫자'] : (Math.max(...vals) >= 100 ? ['백의 자리와 십의 자리 숫자','일의 자리 숫자'] : ['십의 자리 숫자','일의 자리 숫자']);
+  const most = sl.rows.reduce((m,r) => r.leaves.length > m.leaves.length ? r : m, sl.rows[0]);
+  return adviceCard(s, vals) + `
+  <section class="card">
+    <h2>${esc(s.title)}${scopeLabel()}의 줄기와 잎 그림</h2>
+    <div class="scroll"><table class="stem"><thead><tr><th>줄기</th><th>잎</th></tr></thead><tbody>
+      ${sl.rows.map(r => `<tr><td class="s">${r.s}</td><td class="l">${r.leaves.join(' ') || '&nbsp;'}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="key">(${keyTxt})</p>
+    <p class="note">잎이 가장 많은 줄기는 ${most.s}이고 잎이 ${most.leaves.length}개예요. 잎의 총개수 ${vals.length}개 = 변량의 개수.</p>
+  </section>
+  <section class="card">
+    <div class="eyebrow">교과서 방법</div><h2>줄기와 잎 그림 그리는 순서</h2>
+    <ol class="steps">
+      <li>변량을 <b>줄기</b>와 <b>잎</b>으로 나눈다. 이 자료에서는 ${place[0]}를 줄기, ${place[1]}를 잎으로 정했어요.</li>
+      <li>세로선을 긋고, 세로선의 왼쪽에 줄기를 작은 수부터 차례로 세로로 쓴다. 잎이 없는 줄기도 빠뜨리지 않고 써요. (${sl.rows[0].s}부터 ${sl.rows[sl.rows.length-1].s}까지)</li>
+      <li>세로선의 오른쪽에 각 줄기에 해당하는 잎을 가로로 쓴다. 이때 잎은 작은 수부터 쓰고, 같은 수가 여러 번 나오면 모두 써요.</li>
+      <li>그림 아래에 <b>${keyTxt}</b>처럼 줄기와 잎이 무엇을 나타내는지 써 준다.</li>
+    </ol>
+  </section>`;
+}
+
+/* ---------- 탭: 도수분포표 ---------- */
+function viewTableNum(){
+  const s = curSurvey(); const vals = filtered(s).map(r=>r.v); if (!vals.length) return emptyCard(s);
+  const u = unitOf(s); const { w, opts } = widthFor(s, vals); const cls = makeClasses(vals, w);
+  const st = stats(vals);
+  const edge = cls.slice(1).map(c => c.lo).find(b => vals.includes(b));
+  const edgeIdx = edge != null ? cls.findIndex(c => c.lo === edge) : -1;
+  return adviceCard(s, vals) + `
+  <section class="card">
+    <h2>${esc(s.title)}${scopeLabel()}의 도수분포표</h2>
+    <div class="row-actions" style="margin-bottom:10px"><span class="note">계급의 크기</span><div class="chips">${opts.map(o => `<button class="chip" data-width="${o}" aria-pressed="${o===w}">${fmt(o,2)}</button>`).join('')}</div>
+      <label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="tally" ${S.tally?'checked':''}> 正자로 세기 보이기</label></div>
+    <div class="scroll"><table class="t">
+      <thead><tr><th>${esc(s.title)}${u?` (${esc(u)})`:''}</th>${S.tally?'<th>세기</th>':''}<th>도수</th></tr></thead>
+      <tbody>${cls.map((c,i) => `<tr class="${i===edgeIdx?'hot':''}"><td class="num">${fmt(c.lo,2)} 이상 ~ ${fmt(c.hi,2)} 미만</td>${S.tally?`<td class="tally">${tally(c.c)}</td>`:''}<td class="num">${c.c}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>합계</td>${S.tally?'<td></td>':''}<td class="num">${vals.length}</td></tr></tfoot>
+    </table></div>
+    ${edge != null ? `<p class="note">노란 줄: 변량 ${fmt(edge,2)}은(는) 경계값이에요. ‘${fmt(edge,2)} 이상’인 계급에 넣고, 바로 앞 계급(‘${fmt(edge,2)} 미만’)에는 넣지 않아요.</p>` : ''}
+    <p class="note">도수가 가장 큰 계급: ${cls.filter(c => c.c === Math.max(...cls.map(x=>x.c))).map(c => `${fmt(c.lo,2)} 이상 ${fmt(c.hi,2)} 미만`).join(', ')}</p>
+  </section>
+  <section class="card">
+    <div class="eyebrow">교과서 방법</div><h2>도수분포표 만드는 순서</h2>
+    <ol class="steps">
+      <li>가장 작은 변량과 가장 큰 변량을 찾는다. 이 자료에서는 <b>${fmt(st.min,2)}${esc(u)}</b>와 <b>${fmt(st.max,2)}${esc(u)}</b>예요.</li>
+      <li>두 변량이 포함되는 범위를 일정한 간격으로 나누어 <b>계급</b>을 정한다. 간격의 크기를 <b>계급의 크기</b>라고 해요. 여기서는 계급의 크기를 ${fmt(w,2)}(으)로 하여 ${fmt(cls[0].lo,2)} 이상 ~ ${fmt(cls[cls.length-1].hi,2)} 미만을 ${cls.length}개의 계급으로 나눴어요. 계급의 개수는 보통 5~15개가 알맞아요.</li>
+      <li>각 계급에 속하는 변량의 개수(<b>도수</b>)를 세어 쓴다. 正자나 /표시로 세면 빠뜨리지 않아요. ‘이상’은 그 값을 포함하고 ‘미만’은 포함하지 않아요.</li>
+      <li>도수의 합계가 변량의 개수(${vals.length})와 같은지 확인한다.</li>
+    </ol>
+  </section>`;
+}
+
+/* ---------- 탭: 히스토그램·다각형 ---------- */
+function viewGraphNum(){
+  const s = curSurvey(); const vals = filtered(s).map(r=>r.v); if (!vals.length) return emptyCard(s);
+  const u = unitOf(s); const { w, opts } = widthFor(s, vals); const cls = makeClasses(vals, w);
+  const steps = ['가로축·세로축','직사각형(히스토그램)','윗변의 중앙에 점','양 끝에 도수 0인 계급','선분으로 연결'];
+  const area = R(w * vals.length);
+  const svg = chart({ cls, w, series:[{ counts:cls.map(c=>c.c), total:vals.length, color:'var(--accent)' }], step:S.step, bars:!S.polyOnly, showPoly:true, unit:u, aria:'히스토그램과 도수분포다각형' });
+  return `<section class="card">
+    <h2>${esc(s.title)}${scopeLabel()}의 히스토그램과 도수분포다각형</h2>
+    <div class="stepper"><span class="note">한 단계씩</span>${steps.map((t,i) => `<button class="chip" data-step="${i+1}" aria-pressed="${S.step===i+1}">${i+1}. ${t}</button>`).join('')}</div>
+    <div class="row-actions" style="margin-bottom:6px"><span class="note">계급의 크기</span><div class="chips">${opts.map(o => `<button class="chip" data-width="${o}" aria-pressed="${o===w}">${fmt(o,2)}</button>`).join('')}</div>
+      ${S.step===5?`<label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="polyonly" ${S.polyOnly?'checked':''}> 도수분포다각형만 보기</label>`:''}</div>
+    <div class="scroll">${svg}</div>
+  </section>
+  <div class="grid2">
+  <section class="card">
+    <div class="eyebrow">교과서 방법</div><h2>히스토그램 그리는 순서</h2>
+    <ol class="steps">
+      <li>가로축에 각 계급의 양 끝 값을 차례로 쓴다. (${fmt(cls[0].lo,2)}, ${fmt(cls[1]?cls[1].lo:cls[0].hi,2)}, … , ${fmt(cls[cls.length-1].hi,2)})</li>
+      <li>세로축에 도수를 쓴다.</li>
+      <li>각 계급의 크기를 가로로, 도수를 세로로 하는 직사각형을 차례로 그린다. 직사각형끼리는 붙여서 그려요.</li>
+    </ol>
+    <p class="note" style="margin-top:10px">직사각형의 넓이 합 = (계급의 크기) × (도수의 총합) = ${fmt(w,2)} × ${vals.length} = <b>${fmt(area,2)}</b>. 계급의 크기가 같으므로 직사각형의 넓이는 각 계급의 도수에 정비례해요.</p>
+  </section>
+  <section class="card">
+    <div class="eyebrow">교과서 방법</div><h2>도수분포다각형 그리는 순서</h2>
+    <ol class="steps">
+      <li>히스토그램에서 각 직사각형의 윗변의 중앙에 점을 찍는다.</li>
+      <li>히스토그램의 양 끝에 도수가 0인 계급이 하나씩 있다고 생각하고, 그 중앙에 점을 찍는다. (${fmt(cls[0].lo - w/2,2)}, ${fmt(cls[cls.length-1].hi + w/2,2)} 자리)</li>
+      <li>찍은 점들을 차례로 선분으로 연결한다.</li>
+    </ol>
+    <p class="note" style="margin-top:10px">도수분포다각형과 가로축으로 둘러싸인 부분의 넓이 = 히스토그램의 직사각형 넓이 합 = <b>${fmt(area,2)}</b>. 선분 아래로 잘려 나간 삼각형과 새로 생긴 삼각형의 넓이가 같기 때문이에요.</p>
+  </section></div>`;
+}
+
+/* ---------- 탭: 상대도수 ---------- */
+function viewRelNum(){
+  const s = curSurvey(); const rows = filtered(s); const vals = rows.map(r=>r.v); if (!vals.length) return emptyCard(s);
+  const u = unitOf(s); const { w, opts } = widthFor(s, vals); const cls = makeClasses(vals, w); const n = vals.length;
+  const rel = cls.map(c => c.c / n);
+  const relR = rel.map(x => Number(x.toFixed(2)));
+  const sumR = R(relR.reduce((a,b)=>a+b,0));
+  const svg = chart({ cls, w, series:[{ counts:cls.map(c=>c.c), total:n, color:'var(--accent)' }], rel:true, bars:false, step:5, showPoly:true, unit:u, aria:'상대도수의 분포를 나타낸 그래프' });
+  let h = `<section class="card">
+    <div class="eyebrow">상대도수 = (그 계급의 도수) ÷ (도수의 총합)</div>
+    <h2>${esc(s.title)}${scopeLabel()}의 상대도수의 분포표</h2>
+    <div class="row-actions" style="margin-bottom:10px"><span class="note">계급의 크기</span><div class="chips">${opts.map(o => `<button class="chip" data-width="${o}" aria-pressed="${o===w}">${fmt(o,2)}</button>`).join('')}</div></div>
+    <div class="split">
+      <div class="scroll"><table class="t"><thead><tr><th>${esc(s.title)}${u?` (${esc(u)})`:''}</th><th>도수</th><th>상대도수</th></tr></thead>
+        <tbody>${cls.map((c,i) => `<tr><td class="num">${fmt(c.lo,2)} 이상 ~ ${fmt(c.hi,2)} 미만</td><td class="num">${c.c}</td><td class="num" title="${c.c} ÷ ${n}">${relR[i].toFixed(2)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td>합계</td><td class="num">${n}</td><td class="num">1</td></tr></tfoot></table>
+        <p class="note">상대도수는 소수 셋째 자리에서 반올림했어요.${Math.abs(sumR-1)>1e-9?` 반올림 때문에 더하면 ${fmt(sumR,2)}이 되지만, 상대도수의 총합은 항상 1이에요.`:' 상대도수의 총합은 항상 1이에요.'}</p></div>
+      <div class="scroll">${svg}<p class="note">상대도수의 분포를 나타낸 그래프 (상대도수분포다각형)</p></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="eyebrow">교과서 방법</div><h2>상대도수의 분포표와 그래프</h2>
+    <ol class="steps">
+      <li>도수분포표의 각 계급마다 (그 계급의 도수) ÷ (도수의 총합)을 계산해 상대도수를 쓴다. 예: 첫 계급은 ${cls[0].c} ÷ ${n} = ${(cls[0].c/n).toFixed(3)} → 약 ${relR[0].toFixed(2)}</li>
+      <li>상대도수의 총합이 1인지 확인한다. 상대도수에 100을 곱하면 전체의 몇 %인지 알 수 있어요.</li>
+      <li>그래프는 히스토그램이나 도수분포다각형과 같은 방법으로 그리되, 세로축에 도수 대신 <b>상대도수</b>를 쓴다.</li>
+    </ol>
+  </section>`;
+  h += viewWhyRel(s, u);
+  return h;
+}
+function cmpSetup(s, dim){
+  const base = rowsOf(s).filter(r => dim === 'g' ? (S.sex === '전체' || r.s === S.sex) : (S.group === '전체' || r.g === S.group));
+  const keys = dim === 'g' ? groupsOf(s, base).filter(g => base.some(r => r.g === g)) : sexesOf(base);
+  return { base, keys };
+}
+function viewWhyRel(s, u){
+  const cat = isCat(s);
+  let dim = S.cmpBy; let C = cmpSetup(s, dim);
+  const other = dim === 'g' ? 's' : 'g'; const C2 = cmpSetup(s, other);
+  if (C.keys.length < 2 && C2.keys.length >= 2) { dim = S.cmpBy = other; C = C2; }
+  const canG = (dim === 'g' ? C : C2).keys.length >= 2, canS = (dim === 's' ? C : C2).keys.length >= 2;
+  const K = k => dim === 's' ? sexLabel(k) : k;
+  let intro = `<section class="card"><div class="eyebrow">왜 상대도수를 쓸까?</div><h2>전체 수가 다른 두 집단을 비교해 보세요</h2>`;
+  if (C.keys.length < 2) {
+    const exId = cat ? 'ex-mbti' : 'ex-jump';
+    return intro + `<p class="lead">이 자료에는 비교할 집단이 둘 이상 없어요. 반이나 성별이 다른 응답이 모이면 비교할 수 있어요. 지금은 예시 자료로 비교해 보세요.</p>
+      <button class="btn" data-act="go-ex" data-id="${exId}">예시 자료로 비교하기</button></section>`;
+  }
+  if (!C.keys.includes(S.cmpA)) S.cmpA = C.keys[0];
+  if (!C.keys.includes(S.cmpB) || S.cmpB === S.cmpA) S.cmpB = C.keys.find(g => g !== S.cmpA);
+  const A = C.base.filter(r => r[dim] === S.cmpA).map(r => cat ? String(r.v) : r.v), B = C.base.filter(r => r[dim] === S.cmpB).map(r => cat ? String(r.v) : r.v);
+  const nA = A.length, nB = B.length, LA = esc(K(S.cmpA)), LB = esc(K(S.cmpB));
+  let bins, cA, cB, lab, svg, cls, w;
+  const rel = S.cmpMode === 'rel';
+  if (cat) {
+    bins = catOrder(s, [...A, ...B]); cA = catCounts(bins, A); cB = catCounts(bins, B); lab = i => `‘${esc(bins[i])}’`;
+    svg = catChart({ cats:bins, rel, series:[{ counts:cA, total:nA, color:'var(--a)' }, { counts:cB, total:nB, color:'var(--b)' }], aria:'두 집단 비교 막대그래프' });
+  } else {
+    ({ w } = widthFor(s, [...A, ...B])); cls = makeClasses([...A, ...B], w); cA = countIn(A, cls); cB = countIn(B, cls);
+    bins = cls.map(c => `${fmt(c.lo,2)}~${fmt(c.hi,2)}`); lab = i => `${fmt(cls[i].lo,2)} 이상 ${fmt(cls[i].hi,2)} 미만 계급`;
+    svg = chart({ cls, w, rel, bars:false, step:5, showPoly:true, unit:u, series:[{ counts:cA, total:nA, color:'var(--a)' }, { counts:cB, total:nB, color:'var(--b)' }], aria:'두 집단 비교 그래프' });
+  }
+  const rA = cA.map(c => c / nA), rB = cB.map(c => c / nB);
+  let ins = '';
+  for (let i = 0; i < bins.length && !ins; i++) {
+    if (cA[i] > cB[i] && rA[i] < rB[i]) ins = `${lab(i)}은(는) ${LA}의 도수(${cA[i]}명)가 ${LB}(${cB[i]}명)보다 많아요. 그런데 상대도수는 ${LA} ${rA[i].toFixed(2)}, ${LB} ${rB[i].toFixed(2)}로 ${LB}의 비율이 더 높아요.`;
+    else if (cB[i] > cA[i] && rB[i] < rA[i]) ins = `${lab(i)}은(는) ${LB}의 도수(${cB[i]}명)가 ${LA}(${cA[i]}명)보다 많아요. 그런데 상대도수는 ${LA} ${rA[i].toFixed(2)}, ${LB} ${rB[i].toFixed(2)}로 ${LA}의 비율이 더 높아요.`;
+  }
+  for (let i = 0; i < bins.length && !ins; i++) {
+    if (cA[i] === cB[i] && cA[i] > 0 && nA !== nB) ins = `${lab(i)}은(는) 두 집단 모두 ${cA[i]}명으로 도수가 같아요. 하지만 상대도수는 ${LA} ${rA[i].toFixed(2)}, ${LB} ${rB[i].toFixed(2)}로 달라요. 전체 인원이 ${nA}명과 ${nB}명으로 다르기 때문이에요.`;
+  }
+  if (!ins) ins = nA !== nB ? `두 집단의 전체 인원이 ${nA}명과 ${nB}명으로 달라요. 도수만 보면 인원이 많은 집단이 대부분 더 커 보이기 쉬워요.` : `두 집단의 인원이 같아서 지금은 도수와 상대도수의 비교 결과가 같아요. 인원이 다른 집단에서 차이가 드러나요.`;
+  // 질문
+  let qSel, kA, kB, qText;
+  if (cat) {
+    const present = bins.filter((b,i) => cA[i] + cB[i] > 0);
+    if (!present.includes(S.thrCat)) S.thrCat = present[0];
+    qSel = `<select id="thr-cat">${present.map(b => `<option ${b===S.thrCat?'selected':''}>${esc(b)}</option>`).join('')}</select>`;
+    kA = A.filter(v => v === S.thrCat).length; kB = B.filter(v => v === S.thrCat).length;
+    qText = `${qSel}을(를) 고른 학생은 어느 집단에 더 많을까?`;
+  } else {
+    const bnd = cls.slice(1).map(c => c.lo);
+    if (!bnd.includes(S.thr)) S.thr = bnd[Math.floor(bnd.length/2)] ?? cls[0].lo;
+    qSel = `<select id="thr">${bnd.map(b => `<option value="${b}" ${b===S.thr?'selected':''}>${fmt(b,2)}</option>`).join('')}</select>`;
+    kA = A.filter(v => v >= S.thr).length; kB = B.filter(v => v >= S.thr).length;
+    qText = `${esc(s.title)}이(가) ${qSel}${esc(u)} 이상인 학생은 어느 집단에 더 많을까?`;
+  }
+  const pick = (id, cur, oth) => `<select id="${id}">${C.keys.map(g => `<option value="${esc(g)}" ${g===cur?'selected':''} ${g===oth?'disabled':''}>${esc(K(g))}</option>`).join('')}</select>`;
+  const scope = dim === 'g' ? (S.sex !== '전체' ? ` (${sexLabel(S.sex)}만)` : '') : (S.group !== '전체' ? ` (${esc(S.group)}만)` : '');
+  return intro + `
+    <div class="row-actions" style="margin-bottom:10px">
+      ${canG && canS ? `<div class="chips"><button class="chip" data-cmpby="g" aria-pressed="${dim==='g'}">반끼리 비교</button><button class="chip" data-cmpby="s" aria-pressed="${dim==='s'}">남녀 비교</button></div>` : ''}
+      <span class="cmpkey"><span class="a">● ${pick('cmp-a', S.cmpA, S.cmpB)} ${nA}명</span><span class="b">● ${pick('cmp-b', S.cmpB, S.cmpA)} ${nB}명</span></span><span class="note">${scope}</span>
+      <div class="chips"><button class="chip" data-cmp="count" aria-pressed="${!rel}">도수로 비교</button><button class="chip" data-cmp="rel" aria-pressed="${rel}">상대도수로 비교</button></div>
+    </div>
+    <div class="split">
+      <div class="scroll">${svg}<p class="note">${rel ? '세로축: 상대도수 — 전체 인원이 달라도 같은 기준으로 비교할 수 있어요.' : '세로축: 도수 — 인원이 많은 집단의 그래프가 전체적으로 크게 그려지기 쉬워요.'}</p></div>
+      <div class="scroll"><table class="t"><thead><tr><th>${cat ? esc(s.title) : `계급 (${esc(u)})`}</th><th>${LA} 도수</th><th>${LB} 도수</th><th>${LA} 상대도수</th><th>${LB} 상대도수</th></tr></thead>
+        <tbody>${bins.map((b,i) => `<tr><td class="num">${esc(b)}</td><td class="ca">${cA[i]}</td><td class="cb">${cB[i]}</td><td class="ca">${rA[i].toFixed(2)}</td><td class="cb">${rB[i].toFixed(2)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td>합계</td><td>${nA}</td><td>${nB}</td><td>1</td><td>1</td></tr></tfoot></table></div>
+    </div>
+    <p class="insight" style="margin-top:14px">${ins}</p>
+    <h3>질문: ${qText}</h3>
+    <div class="split">
+      <div class="rep"><div class="name">도수로 보면</div><div class="big" style="font-size:1.4rem">${LA} ${kA}명 · ${LB} ${kB}명</div><div class="calc">${kA===kB?'같아요':(kA>kB?LA:LB)+'이(가) 더 많아 보여요'}</div></div>
+      <div class="rep best"><div class="name">상대도수로 보면</div><div class="big" style="font-size:1.4rem">${LA} ${(kA/nA).toFixed(2)} · ${LB} ${(kB/nB).toFixed(2)}</div><div class="calc">${Math.abs(kA/nA-kB/nB)<1e-9?'비율이 같아요':((kA/nA>kB/nB)?LA:LB)+'의 비율이 더 높아요'} (${fmt(kA/nA*100,1)}% · ${fmt(kB/nB*100,1)}%)</div></div>
+    </div>
+    <h3>정리</h3>
+    <ol class="reasons">
+      <li>도수의 총합(전체 인원)이 다른 두 집단은 도수만으로 공정하게 비교하기 어려워요.</li>
+      <li>상대도수는 ‘전체 중에서 그 ${cat?'항목':'계급'}이 차지하는 비율’이라서 전체 인원이 달라도 비교할 수 있어요.</li>
+      <li>상대도수의 그래프를 한 좌표 위에 함께 그리면 두 집단의 분포를 한눈에 비교할 수 있어요.</li>
+    </ol>
+  </section>`;
+}
+
+/* ---------- 항목(글자) 자료 ---------- */
+function viewRep(){ return isCat(curSurvey()) ? viewRepCat() : viewRepNum(); }
+function viewStem(){ return isCat(curSurvey()) ? viewStemCat() : viewStemNum(); }
+function viewTable(){ return isCat(curSurvey()) ? viewTableCat() : viewTableNum(); }
+function viewGraph(){ return isCat(curSurvey()) ? viewGraphCat() : viewGraphNum(); }
+function viewRel(){ return isCat(curSurvey()) ? viewRelCat() : viewRelNum(); }
+function catData(s){
+  const vals = filtered(s).map(r => String(r.v)); const cats = catOrder(s, vals); const counts = catCounts(cats, vals);
+  const used = cats.map((c,i) => ({ c, n:counts[i] }));
+  return { vals, cats, counts, used, n: vals.length };
+}
+function catNote(s){
+  return `<section class="card verdict"><div class="eyebrow">이 자료는 수가 아닌 자료예요</div><div class="title">‘${esc(s.title)}’처럼 항목으로 답한 자료</div>
+    <p style="margin:6px 0 0">더하거나 크기순으로 늘어놓을 수 없어서 평균·중앙값, 줄기와 잎 그림, 도수분포표(계급), 히스토그램은 쓸 수 없어요. 대신 <b>항목별 도수</b>와 <b>상대도수</b>, <b>최빈값</b>으로 정리해요.</p></section>`;
+}
+function catChart({ cats, series, rel = false, aria }){
+  const W = 720, H = 400, many = cats.length > 8, ml = 58, mr = 16, mt = 26, mb = many ? 84 : 52;
+  const ser = series.map(x => ({ ...x, y: x.counts.map(c => rel ? c / (x.total || 1) : c) }));
+  const ymaxRaw = Math.max(...ser.flatMap(x => x.y), rel ? 0.05 : 1);
+  const st = niceStep(ymaxRaw, rel), ymax = Math.ceil(R(ymaxRaw / st)) * st;
+  const Y = v => H - mb - v / ymax * (H - mt - mb);
+  const band = (W - ml - mr) / cats.length, inner = band * 0.72, bw = inner / ser.length;
+  let g = '';
+  for (let t = 0; t <= ymax + 1e-9; t = R(t + st)) g += `<line class="gl" x1="${ml}" x2="${W-mr}" y1="${Y(t)}" y2="${Y(t)}"/><text class="tx" x="${ml-8}" y="${Y(t)+4}" text-anchor="end">${fmt(t,2)}</text>`;
+  cats.forEach((c, i) => {
+    const x0 = ml + i * band + (band - inner) / 2;
+    ser.forEach((x, j) => {
+      const y = x.y[i];
+      g += `<rect x="${x0 + j*bw}" y="${Y(y)}" width="${Math.max(bw - 2, 1)}" height="${Y(0)-Y(y)}" fill="${x.color}" fill-opacity=".85"/>`;
+      if (ser.length === 1 && y > 0) g += `<text class="lbl" x="${x0 + bw/2}" y="${Y(y)-6}" text-anchor="middle">${rel ? fmt(y,2) : y}</text>`;
+    });
+    const cx = ml + i * band + band / 2;
+    g += many ? `<text class="tx" transform="translate(${cx},${H-mb+14}) rotate(-45)" text-anchor="end" font-size="12">${esc(c)}</text>`
+              : `<text class="tx" x="${cx}" y="${H-mb+20}" text-anchor="middle">${esc(c)}</text>`;
+  });
+  g += `<line class="ax" x1="${ml}" x2="${W-mr}" y1="${Y(0)}" y2="${Y(0)}"/><line class="ax" x1="${ml}" x2="${ml}" y1="${mt-8}" y2="${Y(0)}"/>`;
+  g += `<text class="tm" x="${ml-6}" y="${mt-12}">${rel ? '(상대도수)' : '(도수)'}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria || '막대그래프')}">${g}</svg>`;
+}
+function viewRepCat(){
+  const s = curSurvey(); const D = catData(s); if (!D.n) return emptyCard(s);
+  const max = Math.max(...D.counts); const allSame = D.used.filter(x => x.n > 0).every(x => x.n === max) && D.used.filter(x=>x.n>0).length > 1;
+  const modes = allSame ? [] : D.used.filter(x => x.n === max).map(x => x.c);
+  const top = D.used.filter(x => x.n > 0).sort((a,b) => b.n - a.n);
+  return `<section class="card">
+    <div class="eyebrow">대푯값 · 자료 전체의 특징을 하나의 값으로 나타낸 것</div>
+    <h2>${esc(s.title)}${scopeLabel()}의 대푯값</h2>
+    <div class="grid3">
+      <div class="rep"><div class="name">평균<span class="badge bad">구할 수 없음</span></div><div class="big">×</div><div class="calc">${esc(D.cats[0]||'')} + ${esc(D.cats[1]||'')} 처럼 더하거나 나눌 수 없어요.</div></div>
+      <div class="rep"><div class="name">중앙값<span class="badge bad">구할 수 없음</span></div><div class="big">×</div><div class="calc">어느 항목이 더 큰지 정할 수 없어서 크기순으로 늘어놓을 수 없어요.</div></div>
+      <div class="rep best"><div class="name">최빈값<span class="badge good">추천</span></div><div class="big">${modes.length ? modes.map(esc).join(', ') : '없음'}</div><div class="calc">${modes.length ? `${D.n}명 중 ${max}명이 골랐어요` : '모든 항목의 도수가 같아요'}</div></div>
+    </div>
+  </section>
+  <section class="card verdict">
+    <div class="eyebrow">이 자료에는</div>
+    <div class="title">최빈값을 대푯값으로 써요</div>
+    <ol class="reasons">
+      <li>‘${esc(s.title)}’은(는) 수량이 아니라 항목으로 답한 자료예요.</li>
+      <li>항목은 더할 수도, 크기순으로 늘어놓을 수도 없어서 평균과 중앙값을 구할 수 없어요.</li>
+      <li>최빈값은 ‘가장 많이 나타난 값’이라 수가 아닌 자료에도 쓸 수 있어요.${modes.length ? ` 우리 자료의 최빈값은 ${modes.map(esc).join(', ')}이에요.` : ''}</li>
+    </ol>
+  </section>
+  <section class="card"><h2>많이 나온 순서</h2>
+    <div class="vals">${top.map((x,i) => `<span class="v ${modes.includes(x.c)?'med':''}">${esc(x.c)} · ${x.n}</span>`).join('')}</div>
+  </section>`;
+}
+function viewStemCat(){
+  const s = curSurvey();
+  return catNote(s) + `<section class="card"><h2>줄기와 잎 그림을 그릴 수 없어요</h2>
+    <p class="lead">줄기와 잎 그림은 72를 줄기 7, 잎 2로 나누듯이 <b>수의 자릿값</b>을 이용해요. ‘${esc(s.title)}’의 답은 자릿값이 없는 항목이라 줄기와 잎으로 나눌 수 없어요.</p>
+    <p class="lead">대신 <button class="btn ghost" data-tab="table">항목별 도수표</button>로 정리해 보세요.</p></section>`;
+}
+function viewTableCat(){
+  const s = curSurvey(); const D = catData(s); if (!D.n) return emptyCard(s);
+  const max = Math.max(...D.counts);
+  return catNote(s) + `<section class="card">
+    <h2>${esc(s.title)}${scopeLabel()}의 항목별 도수표</h2>
+    <label class="note" style="display:flex;gap:6px;align-items:center;margin-bottom:10px"><input type="checkbox" id="tally" ${S.tally?'checked':''}> 正자로 세기 보이기</label>
+    <div class="scroll"><table class="t"><thead><tr><th>${esc(s.title)}</th>${S.tally?'<th>세기</th>':''}<th>도수</th></tr></thead>
+      <tbody>${D.used.map(x => `<tr class="${x.n===max?'hot':''}"><td>${esc(x.c)}</td>${S.tally?`<td class="tally">${tally(x.n)}</td>`:''}<td class="num">${x.n}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>합계</td>${S.tally?'<td></td>':''}<td class="num">${D.n}</td></tr></tfoot></table></div>
+    <p class="note">노란 줄이 도수가 가장 큰 항목, 곧 최빈값이에요.</p>
+  </section>
+  <section class="card"><div class="eyebrow">도수분포표와 무엇이 다를까</div><h2>항목별 도수표 만드는 순서</h2>
+    <ol class="steps">
+      <li>나올 수 있는 항목을 모두 쓴다. 아무도 고르지 않은 항목도 도수 0으로 써요.</li>
+      <li>각 항목을 고른 사람 수(도수)를 正자로 세어 쓴다.</li>
+      <li>도수의 합계가 응답 수(${D.n})와 같은지 확인한다.</li>
+    </ol>
+    <p class="note" style="margin-top:8px">수량 자료의 도수분포표는 ‘이상~미만’의 계급으로 묶지만, 항목 자료는 항목 하나하나가 그대로 칸이 돼요.</p>
+  </section>`;
+}
+function viewGraphCat(){
+  const s = curSurvey(); const D = catData(s); if (!D.n) return emptyCard(s);
+  return catNote(s) + `<section class="card">
+    <h2>${esc(s.title)}${scopeLabel()}의 막대그래프</h2>
+    <div class="scroll">${catChart({ cats:D.cats, series:[{ counts:D.counts, total:D.n, color:'var(--accent)' }], aria:'항목별 도수 막대그래프' })}</div>
+  </section>
+  <section class="card"><div class="eyebrow">히스토그램을 쓰지 않는 이유</div><h2>막대 사이를 띄워 그려요</h2>
+    <ol class="reasons">
+      <li>히스토그램은 이어진 수의 구간(계급)을 나타내서 직사각형을 붙여 그려요.</li>
+      <li>항목 자료는 항목끼리 이어져 있지 않아서 막대를 서로 띄워 그리는 막대그래프로 나타내요.</li>
+      <li>같은 이유로 도수분포다각형도 그리지 않아요. 항목 사이에 ‘가운데 값’이 없기 때문이에요.</li>
+    </ol>
+  </section>`;
+}
+function viewRelCat(){
+  const s = curSurvey(); const D = catData(s); if (!D.n) return emptyCard(s);
+  const rel = D.counts.map(c => c / D.n), relR = rel.map(x => Number(x.toFixed(2))); const sumR = R(relR.reduce((a,b)=>a+b,0));
+  return `<section class="card">
+    <div class="eyebrow">상대도수 = (그 항목의 도수) ÷ (도수의 총합)</div>
+    <h2>${esc(s.title)}${scopeLabel()}의 상대도수표</h2>
+    <div class="split">
+      <div class="scroll"><table class="t"><thead><tr><th>${esc(s.title)}</th><th>도수</th><th>상대도수</th></tr></thead>
+        <tbody>${D.cats.map((c,i) => `<tr><td>${esc(c)}</td><td class="num">${D.counts[i]}</td><td class="num">${relR[i].toFixed(2)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td>합계</td><td class="num">${D.n}</td><td class="num">1</td></tr></tfoot></table>
+        <p class="note">상대도수는 소수 셋째 자리에서 반올림했어요.${Math.abs(sumR-1)>1e-9?` 반올림 때문에 더하면 ${fmt(sumR,2)}이 되지만, 상대도수의 총합은 항상 1이에요.`:' 상대도수의 총합은 항상 1이에요.'}</p></div>
+      <div class="scroll">${catChart({ cats:D.cats, series:[{ counts:D.counts, total:D.n, color:'var(--accent)' }], rel:true, aria:'항목별 상대도수 막대그래프' })}</div>
+    </div>
+  </section>` + viewWhyRel(s, '');
+}
+
+/* ---------- 탭: 설문 관리 ---------- */
+function viewAdmin(){
+  if (!S.db) return `<section class="card"><h2>이 화면에서는 설문을 만들 수 없어요</h2><p class="lead">응답 저장소에 연결되지 않았어요. 예시 자료와 ‘직접 입력한 자료’로 수업할 수 있어요.</p></section>`;
+  if (!S.canEdit) return `<section class="card"><h2>교사 로그인이 필요해요</h2><div class="row-actions">${loginHtml()}</div></section>`;
+  const list = liveSurveys();
+  return `<section class="card">
+    <h2>새 설문 만들기</h2>
+    <p class="note">${esc(S.authEmail || '')}(으)로 로그인됨 · <button class="btn ghost mini" data-act="gsignout">로그아웃</button></p>
+    <p class="lead">질문을 만들면 바로 응답을 받기 시작해요. 학생들은 첫 화면에서 ‘학생’을 고르면 열린 설문부터 보게 돼요.</p>
+    <div class="chips" style="margin-bottom:12px">${PRESETS.map((p,i) => `<button class="chip" data-preset="${i}">${esc(p.title)}</button>`).join('')}</div>
+    <div class="form">
+      <label class="wide">질문<input id="nv-title" type="text" placeholder="예: 1분 동안 줄넘기 횟수"></label>
+      <label class="wide">답하는 방법<select id="nv-type"><option value="number" ${S.nvType!=='category'?'selected':''}>숫자로 답하기 (키, 시간, 횟수 등)</option><option value="category" ${S.nvType==='category'?'selected':''}>보기에서 고르기 (MBTI, 좋아하는 과목 등)</option></select></label>
+      <label class="wide only-cat" ${S.nvType==='category'?'':'hidden'}>보기 (쉼표로 구분)<textarea id="nv-options" rows="3" placeholder="예: ISTJ, ISFJ, INFJ, ..."></textarea></label>
+      <label class="only-num" ${S.nvType==='category'?'hidden':''}>단위<input id="nv-unit" type="text" placeholder="예: 회"></label>
+      <label class="only-num" ${S.nvType==='category'?'hidden':''}>값의 형태<select id="nv-dec"><option value="0">자연수</option><option value="1">소수 첫째 자리까지</option></select></label>
+      <label class="only-num" ${S.nvType==='category'?'hidden':''}>가장 작은 값<input id="nv-min" type="number" step="any"></label>
+      <label class="only-num" ${S.nvType==='category'?'hidden':''}>가장 큰 값<input id="nv-max" type="number" step="any"></label>
+      <label class="wide">반 (쉼표로 구분 · 비우면 학생이 반 번호를 직접 써요)<input id="nv-groups" type="text" placeholder="예: 1반, 2반, 3반"></label>
+      <label class="wide only-num" ${S.nvType==='category'?'hidden':''}>자료의 성격<select id="nv-kind"><option value="measure">재거나 센 값 (키, 시간, 횟수)</option><option value="choice">가장 많은 값이 중요한 자료 (신발·옷 크기)</option></select></label>
+    </div>
+    <p class="note">학생은 모든 설문에서 반과 성별을 함께 답해요.</p>
+    <div class="row-actions" style="margin-top:12px"><button class="btn" data-act="create">설문 만들기</button>${S.adminMsg?`<span class="msg ${S.adminMsg.err?'err':''}">${esc(S.adminMsg.t)}</span>`:''}</div>
+  </section>
+  <section class="card"><h2>우리 반 설문</h2>
+    ${list.length ? `<div class="stack">${list.map(sv => {
+      const n = rowsOf(sv).length;
+      const cf = S.confirm;
+      return `<div class="survey-item">
+        <div class="row-actions"><b style="font-size:1.1rem">${esc(sv.title)}</b>${sv.unit?`<span class="note">(${esc(sv.unit)})</span>`:''}<span class="badge mid">${isCat(sv)?'보기에서 고르기':'숫자'}</span><span class="badge ${sv.open?'good':'bad'}">${sv.open?'응답 받는 중':'마감'}</span><span class="note">응답 ${n}개${(sv.manual||[]).length?` (선생님 입력 ${(sv.manual||[]).length}개 포함)`:''}</span></div>
+        <div class="row-actions">
+          <button class="btn ghost" data-act="toggle" data-id="${esc(sv.id)}">${sv.open?'응답 마감하기':'다시 열기'}</button>
+          <button class="btn ghost" data-act="view" data-id="${esc(sv.id)}">분석 보기</button>
+          ${cf===sv.id+':reset' ? `<span class="note">학생 응답을 모두 비울까요?</span><button class="btn danger" data-act="reset" data-id="${esc(sv.id)}">비우기</button><button class="btn ghost" data-act="cancel">취소</button>` : `<button class="btn ghost" data-act="ask" data-what="reset" data-id="${esc(sv.id)}">응답 비우기</button>`}
+          ${cf===sv.id+':del' ? `<span class="note">설문을 삭제할까요?</span><button class="btn danger" data-act="del" data-id="${esc(sv.id)}">삭제</button><button class="btn ghost" data-act="cancel">취소</button>` : `<button class="btn ghost" data-act="ask" data-what="del" data-id="${esc(sv.id)}">삭제</button>`}
+        </div>
+        <details><summary class="note">값 직접 넣기 (결석생, 다른 반 자료 등)</summary>
+          <p class="note">한 줄에 <code>${isCat(sv) ? '1반, 남, '+esc((sv.options||[])[0]||'') : '1반, 여, 72'}</code>처럼 반·성별·답을 쓰거나 답만 여러 개 써도 돼요.</p>
+          <textarea id="man-${esc(sv.id)}" rows="4"></textarea>
+          <div class="row-actions" style="margin-top:8px"><button class="btn" data-act="manual" data-id="${esc(sv.id)}">추가하기</button>${(sv.manual||[]).length?`<button class="btn ghost" data-act="manual-clear" data-id="${esc(sv.id)}">직접 넣은 값 지우기</button>`:''}</div>
+        </details>
+      </div>`; }).join('')}</div>` : `<p class="lead">아직 만든 설문이 없어요. 위에서 첫 설문을 만들어 보세요.</p>`}
+  </section>`;
+}
+
+/* ---------- 역할 선택 · 교사 확인 ---------- */
+function viewRoles(){
+  return `<section class="card" style="background:transparent;border:0;padding:0">
+    <div class="welcome">누가 들어왔나요?</div>
+    <p class="lead">역할을 고르면 그에 맞는 화면으로 들어가요.</p>
+    <div class="roles">
+      <button class="role-card st" data-role="student"><span class="eyebrow" style="color:var(--a)">STUDENT</span><span class="r-name">학생</span><span class="r-desc">선생님이 낸 설문에 내 값을 내요.</span><span class="r-go">설문하러 가기 →</span></button>
+      <button class="role-card" data-role="teacher"><span class="eyebrow">TEACHER</span><span class="r-name">선생님</span><span class="r-desc">설문을 만들고, 모인 자료로 대푯값·표·그래프를 분석해요.</span><span class="r-go">교사용 페이지 →</span></button>
+    </div>
+  </section>`;
+}
+function viewPin(){
+  return `<section class="card">
+    <div class="eyebrow">교사용 페이지</div>
+    <h2>교사 확인</h2>
+    <p class="lead">교사 번호를 입력해 주세요.</p>
+    <form id="pin-form" class="pin">
+      <input id="pin-val" type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="교사 번호">
+      <button class="btn" type="submit">들어가기</button>
+      <button class="btn ghost" type="button" data-act="back-roles">뒤로</button>
+    </form>
+    ${S.pinMsg ? `<p class="msg err">${esc(S.pinMsg)}</p>` : ''}
+  </section>`;
+}
+function renderWho(){
+  const el = $('#who');
+  if (!S.role || S.tab === 'pin') { el.innerHTML = ''; return; }
+  el.className = 'who';
+  el.innerHTML = `<span class="role">${S.role === 'teacher' ? '교사용' : '학생용'}</span><button data-act="switch-role">역할 바꾸기</button>`;
+}
+
+function renderShare(){
+  const el = $('#share');
+  if (S.role !== 'teacher' || S.tab === 'pin') { el.innerHTML = ''; return; }
+  const st = shownTab(); const sh = S.shown;
+  const can = S.db && S.canEdit;
+  let info = '';
+  if (st) {
+    const sv = allSurveys().find(x => x.id === sh.cur);
+    const scope = [sh.group && sh.group !== '전체' ? sh.group : '', sh.sex && sh.sex !== '전체' ? sexLabel(sh.sex) : ''].filter(Boolean).join(' · ');
+    info = `<span class="share-dot"></span><b>학생에게 보이는 중</b><span class="share-what">‘${esc(tabLabel(st))}’ · ${esc(sv ? sv.title : (sh.local && sh.local.title) || '자료')}${scope ? ' · ' + esc(scope) : ''}</span>`;
+  } else info = `<b>학생 화면 연동 꺼짐</b><span class="note">학생은 ‘응답하기’만 볼 수 있어요.</span>`;
+  const btn = !can ? loginHtml()
+    : st ? `<button class="btn ghost" data-act="share-off">그만 보여주기</button>`
+         : `<button class="btn" data-act="share-on">${SHOW_TABS.includes(S.tab) ? '이 화면 학생에게 보여주기' : '학생에게 화면 보여주기'}</button>`;
+  el.innerHTML = `<div class="share ${st?'on':''}">${info}<span class="share-act">${btn}</span>
+    ${st ? `<span class="note share-hint">탭이나 자료·반·성별을 바꾸면 학생 화면도 함께 바뀌어요.${S.tab==='admin'?' 설문 관리 화면은 학생에게 보이지 않아요.':''}</span>` : ''}
+    ${S.shareMsg ? `<span class="msg err">${esc(S.shareMsg)}</span>` : ''}</div>`;
+}
+
+function loginHtml(){
+  if (!S.auth) return `<span class="note">응답 저장소(Firebase)가 아직 연결되지 않았어요. firebase-config.js를 채워 주세요.</span>`;
+  if (S.authEmail && !S.canEdit) return `<span class="note">${esc(S.authEmail)} 계정은 교사로 등록되지 않았어요.</span><button class="btn ghost" data-act="gsignout">로그아웃</button>`;
+  return `<span class="note">설문 만들기와 학생 화면 연동은 교사 구글 계정으로 로그인해야 쓸 수 있어요.</span><button class="btn" data-act="gsignin">구글로 로그인</button>`;
+}
+
+/* ---------- 렌더 ---------- */
+function render(){
+  // 입력 중인 값과 포커스 보존
+  const keep = {}; document.querySelectorAll('#main input, #main textarea, #main select').forEach(el => { if (el.id && el.type !== 'checkbox' && el.tagName !== 'SELECT') keep[el.id] = el.value; });
+  const fid = document.activeElement && document.activeElement.id;
+  if (!S.role) { if (S.tab !== 'pin') S.tab = 'roles'; }
+  else if (S.role === 'student') { if (S.tab !== shownTab()) S.tab = 'submit'; else applyShown(); }
+  else if (S.tab !== 'pin' && !TEACHER_TABS.includes(S.tab)) S.tab = 'data';
+  renderTabs(); renderShare(); renderLive(); renderWho();
+  if (S.tab === 'roles' || S.tab === 'pin') { $('#banner').innerHTML = ''; $('#toolbar').innerHTML = ''; }
+  else { renderBanner(); renderToolbar(); }
+  const v = { roles:viewRoles, pin:viewPin, submit:viewSubmit, data:viewData, rep:viewRep, stem:viewStem, table:viewTable, graph:viewGraph, rel:viewRel, admin:viewAdmin }[S.tab] || viewData;
+  $('#main').innerHTML = v();
+  for (const [id,val] of Object.entries(keep)) { const el = document.getElementById(id); if (el && !el.value && val) el.value = val; }
+  if (fid) { const el = document.getElementById(fid); if (el && el.focus) el.focus(); }
+  pushShown();
+}
+function setTab(t){ if (S.role === 'student' && t !== 'submit' && t !== shownTab()) return; S.tab = t; if (location.hash.slice(1) !== t) { try { history.replaceState(null,'','#'+t); } catch(e) { location.hash = t; } } render(); window.scrollTo(0,0); }
+
+function parseLines(text, s){
+  const cat = s ? isCat(s) : null; const opts = (s && s.options) || []; const groups = (s && s.groups) || [];
+  const out = [];
+  for (const line of text.split(/\n/)) {
+    const toks = line.split(/[,，\t]+|\s+/).map(t => t.trim()).filter(Boolean); if (!toks.length) continue;
+    let g = '', sx = ''; const nums = [], strs = [];
+    for (const t of toks) {
+      const sv = /^(남|남학생|남자)$/.test(t) ? '남' : /^(여|여학생|여자)$/.test(t) ? '여' : '';
+      if (sv) { sx = sv; continue; }
+      if (/^\d+반$/.test(t) || groups.includes(t)) { g = t; continue; }
+      const n = Number(t);
+      if (cat !== true && isFinite(n)) { nums.push(n); continue; }
+      strs.push(t);
+    }
+    if (cat === true) strs.forEach(t => { const m = opts.find(o => o.toUpperCase() === t.toUpperCase()); if (m || !opts.length) out.push({ v:m || canon(t), g, s:sx }); });
+    else if (cat === false) { if (!g && strs.length) g = strs[0]; nums.forEach(v => out.push({ v, g, s:sx })); }
+    else if (nums.length && strs.length === 1 && !g) nums.forEach(v => out.push({ v, g:strs[0], s:sx }));
+    else { nums.forEach(v => out.push({ v, g, s:sx })); strs.forEach(t => out.push({ v:canon(t), g, s:sx })); }
+  }
+  return out;
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-role],[data-tab],[data-group],[data-sex],[data-cmpby],[data-submit-sex],[data-submit-cat],[data-width],[data-step],[data-cmp],[data-act],[data-preset],[data-submit-sid],[data-submit-group]');
+  if (!t) return;
+  if (t.dataset.role === 'student') { setRole('student'); S.tab = 'submit'; try { history.replaceState(null,'','#submit'); } catch(e) {} render(); return; }
+  if (t.dataset.role === 'teacher') { S.pinMsg = null; S.tab = 'pin'; render(); const p = $('#pin-val'); p && p.focus(); return; }
+  if (t.dataset.act === 'back-roles') { S.tab = 'roles'; render(); return; }
+  if (t.dataset.act === 'switch-role') { setRole(null); S.tab = 'roles'; S.submitMsg = null; try { history.replaceState(null,'',location.pathname + location.search); } catch(e) {} render(); return; }
+  if (t.dataset.tab) return setTab(t.dataset.tab);
+  if (t.dataset.group) { S.group = t.dataset.group; S.whatIf = null; return render(); }
+  if (t.dataset.sex) { S.sex = t.dataset.sex; S.whatIf = null; return render(); }
+  if (t.dataset.cmpby) { S.cmpBy = t.dataset.cmpby; S.cmpA = S.cmpB = null; return render(); }
+  if (t.dataset.submitSex) { S.submitSex = t.dataset.submitSex; return render(); }
+  if (t.dataset.submitCat) { S.submitCat = t.dataset.submitCat; return render(); }
+  if (t.dataset.width) { S.width[curSurvey().id] = Number(t.dataset.width); return render(); }
+  if (t.dataset.step) { S.step = Number(t.dataset.step); if (S.step < 5) S.polyOnly = false; return render(); }
+  if (t.dataset.cmp) { S.cmpMode = t.dataset.cmp; return render(); }
+  if (t.dataset.submitSid) { S.submitSid = t.dataset.submitSid; S.submitMsg = null; return render(); }
+  if (t.dataset.submitGroup) { S.submitGroup = t.dataset.submitGroup; return render(); }
+  if (t.dataset.preset) { const p = PRESETS[Number(t.dataset.preset)];
+    S.nvType = p.type === 'category' ? 'category' : 'number'; $('#nv-type').value = S.nvType; applyNvType();
+    $('#nv-title').value = p.title; $('#nv-unit').value = p.unit || '';
+    if (p.type === 'category') $('#nv-options').value = p.options.join(', ');
+    else { $('#nv-dec').value = String(p.decimals); $('#nv-min').value = p.min; $('#nv-max').value = p.max; $('#nv-kind').value = p.kind; }
+    return; }
+  const act = t.dataset.act, id = t.dataset.id;
+  if (act === 'gsignin' && S.auth) {
+    S.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => {
+      if (err && err.code === 'auth/unauthorized-domain') S.shareMsg = '이 주소가 Firebase에 등록되지 않았어요. Authentication > 설정 > 승인된 도메인에 github.io 주소를 추가해 주세요.';
+      else if (err && err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') S.shareMsg = '구글 로그인에 실패했어요. Authentication에서 Google 로그인을 사용 설정했는지 확인해 주세요.';
+      render();
+    });
+    return;
+  }
+  if (act === 'gsignout' && S.auth) { S.auth.signOut(); return; }
+  try {
+    if (act === 'whatif') { const v = Number($('#whatif').value); if ($('#whatif').value !== '' && isFinite(v)) { S.whatIf = v; render(); } return; }
+    if (act === 'whatif-clear') { S.whatIf = null; return render(); }
+    if (act === 'go-ex') { S.cur = id; S.group = '전체'; S.sex = '전체'; S.cmpA = S.cmpB = null; return render(); }
+    if (act === 'loc-save') {
+      S.local.title = $('#loc-title').value.trim() || '직접 입력한 자료'; S.local.unit = $('#loc-unit').value.trim(); S.local.kind = $('#loc-kind').value;
+      S.local.values = parseLines($('#loc-text').value, null); saveLocal(); render();
+      const m = $('#loc-msg'); if (m) m.textContent = `변량 ${S.local.values.length}개를 넣었어요.`; return;
+    }
+    if (act === 'loc-clear') { S.local.values = []; saveLocal(); $('#loc-text') && ($('#loc-text').value = ''); return render(); }
+    if (!S.db) return;
+    if (act === 'share-on') {
+      S.shareMsg = null; const body = sharePayload(); lastShareKey = JSON.stringify(body);
+      await S.db.doc('control/live').set({ ...body, at:Date.now() }); return;
+    }
+    if (act === 'share-off') { S.shareMsg = null; lastShareKey = null; await S.db.doc('control/live').set({ on:false, at:Date.now() }); return; }
+    if (act === 'create') {
+      const title = $('#nv-title').value.trim(); if (!title) { S.adminMsg = { t:'질문을 입력해 주세요.', err:true }; return render(); }
+      const num = x => x === '' ? null : Number(x);
+      const sid = 'sv' + Date.now().toString(36);
+      const type = $('#nv-type').value === 'category' ? 'category' : 'number';
+      const groups = $('#nv-groups').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean);
+      let body;
+      if (type === 'category') {
+        const options = uniqCanon($('#nv-options').value.split(/[,，\n]/).map(x=>x.trim()).filter(Boolean));
+        if (options.length < 2) { S.adminMsg = { t:'보기를 두 개 이상 써 주세요.', err:true }; return render(); }
+        body = { title, type, options, unit:'', kind:'choice', groups, open:true, createdAt:Date.now(), resetAt:0, manual:[] };
+      } else {
+        body = { title, type, unit:$('#nv-unit').value.trim(), decimals:Number($('#nv-dec').value), min:num($('#nv-min').value), max:num($('#nv-max').value),
+          groups, kind:$('#nv-kind').value, open:true, createdAt:Date.now(), resetAt:0, manual:[] };
+      }
+      await S.db.doc('surveys/' + sid).set(body);
+      S.adminMsg = { t:`‘${title}’ 설문을 만들었어요. 응답을 받고 있어요.` }; S.cur = sid;
+      ['nv-title','nv-unit','nv-min','nv-max','nv-groups','nv-options'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+      return render();
+    }
+    if (act === 'toggle') { await S.db.doc('surveys/' + id).update({ open: !S.surveys[id].open }); return; }
+    if (act === 'view') { S.cur = id; S.group = '전체'; S.sex = '전체'; return setTab('rep'); }
+    if (act === 'ask') { S.confirm = id + ':' + t.dataset.what; return render(); }
+    if (act === 'cancel') { S.confirm = null; return render(); }
+    if (act === 'reset') { S.confirm = null; await S.db.doc('surveys/' + id).update({ resetAt: Date.now() }); return; }
+    if (act === 'del') { S.confirm = null; if (S.cur === id) S.cur = 'ex-jump'; await S.db.doc('surveys/' + id).delete(); return; }
+    if (act === 'manual') {
+      const sv = { id, ...S.surveys[id] }; const add = parseLines($('#man-' + id).value, sv);
+      if (!add.length) return;
+      await S.db.doc('surveys/' + id).update({ manual: [...(sv.manual||[]), ...add] });
+      $('#man-' + id).value = ''; return;
+    }
+    if (act === 'manual-clear') { await S.db.doc('surveys/' + id).update({ manual: [] }); return; }
+  } catch (err) {
+    if (act === 'share-on' || act === 'share-off') { lastShareKey = null; S.shareMsg = '학생 화면 설정을 저장하지 못했어요. 교사 구글 계정으로 로그인했는지 확인해 주세요.'; return render(); }
+    S.adminMsg = { t: err && err.code === 'quota_exceeded' ? '저장 공간이 가득 찼어요. 쓰지 않는 설문을 삭제해 주세요.' : '저장하지 못했어요. 교사 구글 계정으로 로그인했는지 확인해 주세요.', err:true };
+    render();
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'sel-survey') { S.cur = t.value; S.group = '전체'; S.sex = '전체'; S.whatIf = null; S.thr = null; S.thrCat = null; S.cmpA = S.cmpB = null; return render(); }
+  if (t.id === 'nv-type') { S.nvType = t.value; applyNvType(); return; }
+  if (t.id === 'thr-cat') { S.thrCat = t.value; return render(); }
+  if (t.id === 'tally') { S.tally = t.checked; return render(); }
+  if (t.id === 'polyonly') { S.polyOnly = t.checked; return render(); }
+  if (t.id === 'cmp-a') { S.cmpA = t.value; return render(); }
+  if (t.id === 'cmp-b') { S.cmpB = t.value; return render(); }
+  if (t.id === 'thr') { S.thr = Number(t.value); return render(); }
+});
+document.addEventListener('submit', async e => {
+  if (e.target.id === 'pin-form') {
+    e.preventDefault();
+    const ok = await checkPin($('#pin-val').value.trim());
+    if (ok) { setRole('teacher'); S.pinMsg = null; setTab('data'); }
+    else { S.pinMsg = '번호가 맞지 않아요. 다시 입력해 주세요.'; render(); const p = $('#pin-val'); if (p) { p.value = ''; p.focus(); } }
+    return;
+  }
+  if (e.target.id !== 'ans-form') return;
+  e.preventDefault();
+  if (!S.submitSid || !S.surveys[S.submitSid] || !S.db || !S.uid) return;
+  const s = { id:S.submitSid, ...S.surveys[S.submitSid] };
+  const cat = isCat(s); const d = s.decimals || 0;
+  const fail = t => { S.submitMsg = { t, err:true }; render(); };
+  let g = S.submitGroup;
+  if (!(s.groups||[]).length) { const c = parseInt(($('#ans-class')||{}).value, 10); if (!c || c < 1) return fail('몇 반인지 숫자로 써 주세요.'); g = c + '반'; S.submitGroup = g; }
+  else if (!g) return fail('반을 먼저 골라 주세요.');
+  if (!S.submitSex) return fail('성별을 골라 주세요.');
+  let v;
+  if (cat) { if (!S.submitCat) return fail('보기에서 하나를 골라 주세요.'); v = S.submitCat; }
+  else {
+    const raw = $('#ans-val').value; v = Number(raw);
+    if (raw === '' || !isFinite(v)) return fail('숫자를 입력해 주세요.');
+    if (decOf(v) > d) return fail(d ? `소수 ${d}째 자리까지만 써 주세요.` : '자연수로 써 주세요.');
+    if (s.min != null && v < s.min) return fail(`${s.min}${s.unit} 이상으로 써 주세요.`);
+    if (s.max != null && v > s.max) return fail(`${s.max}${s.unit} 이하로 써 주세요.`);
+  }
+  try {
+    const ref = S.db.doc('answers/' + S.uid); const snap = await ref.get();
+    const body = snap.exists ? { ...snap.data() } : {};
+    body[s.id] = { v, g, s:S.submitSex, t:Date.now() };
+    await ref.set(body);
+    S.submitMsg = { t:`${cat ? v : fmt(v,2) + (s.unit||'')}(으)로 냈어요. 고마워요!` }; if ($('#ans-val')) $('#ans-val').value = ''; render();
+  } catch (err) { S.canWrite = false; fail('응답을 저장하지 못했어요. 선생님께 알려 주세요.'); }
+});
+function applyNvType(){
+  const cat = S.nvType === 'category';
+  document.querySelectorAll('.only-cat').forEach(el => el.hidden = !cat);
+  document.querySelectorAll('.only-num').forEach(el => el.hidden = cat);
+}
+window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (h !== S.tab && ((S.role === 'teacher' && TEACHER_TABS.includes(h)) || (S.role === 'student' && (h === 'submit' || h === shownTab())))) { S.tab = h; render(); } });
+
+/* ---------- 시작 ---------- */
+(function start(){
+  const h = location.hash.slice(1);
+  if (h === 'submit' && S.role !== 'teacher') setRole('student');
+  S.tab = S.role === 'teacher' ? (TEACHER_TABS.includes(h) ? h : 'data') : S.role === 'student' ? 'submit' : 'roles';
+  render();
+  const cfg = window.FIREBASE_CONFIG;
+  if (!cfg || !window.firebase) { S.dbState = 'off'; return render(); }
+  try { firebase.initializeApp(cfg); } catch (e) { S.dbState = 'off'; return render(); }
+  const auth = firebase.auth(); S.auth = auth;
+  const teachers = (window.TEACHER_EMAILS || []).map(x => String(x).trim().toLowerCase());
+  let attached = false;
+  auth.onAuthStateChanged(async u => {
+    if (!u) {
+      try { await auth.signInAnonymously(); }
+      catch (e) { S.authErr = '익명 로그인이 꺼져 있어요. Firebase 콘솔의 Authentication에서 ‘익명’을 사용 설정해 주세요.'; S.dbState = 'off'; render(); }
+      return;
+    }
+    S.uid = u.uid; S.canWrite = true;
+    S.authEmail = u.isAnonymous ? null : (u.email || '');
+    S.canEdit = !u.isAnonymous && teachers.includes((u.email || '').toLowerCase());
+    if (attached) return render();
+    attached = true; attach(firebase.firestore());
+  });
+  function attach(db){
+    S.db = db;
+    let gotS = false, gotA = false;
+    const timer = setTimeout(() => { if (!(gotS && gotA)) { S.dbState = 'slow'; render(); } }, 10000);
+    const done = () => {
+      if (gotS && gotA && S.dbState !== 'ready') {
+        clearTimeout(timer); S.dbState = 'ready';
+        const live = liveSurveys();
+        if (live.length && S.cur === 'ex-jump') S.cur = live[0].id;
+      }
+      render();
+    };
+    db.collection('surveys').onSnapshot(snap => {
+      S.surveys = {}; snap.docs.forEach(d => { if (d.exists) S.surveys[d.id] = d.data(); });
+      if (!snap.metadata.fromCache) gotS = true; done();
+    }, err => { S.dbState = 'error'; render(); });
+    db.doc('control/live').onSnapshot(d => {
+      S.shown = d.exists ? d.data() : null; render();
+    }, () => {});
+    db.collection('answers').onSnapshot(snap => {
+      S.answers = snap.docs.filter(d => d.exists).map(d => ({ id:d.id, data:d.data() }));
+      if (!snap.metadata.fromCache) gotA = true; done();
+    }, err => { S.dbState = 'error'; render(); });
+  }
+})();
+</script>
+</body>
+</html>

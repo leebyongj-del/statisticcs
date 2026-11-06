@@ -1,0 +1,33 @@
+rules_version = '2';
+// 우리반 통계 실험실 · Firestore 보안 규칙
+// 아래 '교사-구글-이메일@gmail.com'을 firebase-config.js의 TEACHER_EMAILS와 같은 주소로 바꾸세요.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isTeacher() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['교사-구글-이메일@gmail.com'];
+    }
+
+    // 설문 목록: 누구나 읽고, 교사만 만들고 바꿈
+    match /surveys/{surveyId} {
+      allow read: if true;
+      allow write: if isTeacher();
+    }
+
+    // 학생에게 보여 줄 화면 설정: 누구나 읽고, 교사만 바꿈
+    match /control/{docId} {
+      allow read: if true;
+      allow write: if isTeacher();
+    }
+
+    // 학생 응답: 각 학생(익명 로그인)은 자기 칸만 쓰고, 교사는 지울 수 있음
+    match /answers/{uid} {
+      allow read: if true;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+                            && request.resource.data.size() < 200;
+      allow delete: if isTeacher() || (request.auth != null && request.auth.uid == uid);
+    }
+  }
+}
