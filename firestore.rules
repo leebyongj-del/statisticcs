@@ -7,7 +7,7 @@ service cloud.firestore {
     function isTeacher() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email in ['leebyongj@myongji.sen.ms.kr'];
+        && request.auth.token.email in ['leebyongj@gmail.com'];
     }
 
     // 설문 목록: 누구나 읽고, 교사만 만들고 바꿈
