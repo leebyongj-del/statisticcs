@@ -1,13 +1,13 @@
 rules_version = '2';
 // 우리반 통계 실험실 · Firestore 보안 규칙
-// 아래 '교사-구글-이메일@gmail.com'을 firebase-config.js의 TEACHER_EMAILS와 같은 주소로 바꾸세요.
+// 교사 이메일은 firebase-config.js의 TEACHER_EMAILS와 같아야 해요.
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function isTeacher() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email in ['교사-구글-이메일@gmail.com'];
+        && request.auth.token.email in ['leebyongj@myongji.sen.ms.kr'];
     }
 
     // 설문 목록: 누구나 읽고, 교사만 만들고 바꿈

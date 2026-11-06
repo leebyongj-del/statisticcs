@@ -25,4 +25,4 @@ window.FIREBASE_CONFIG = {
 */
 
 // ② 설문을 만들고 학생 화면을 바꿀 수 있는 교사 구글 계정 (firestore.rules에도 같은 주소를 넣어야 해요)
-window.TEACHER_EMAILS = ["교사-구글-이메일@gmail.com"];
+window.TEACHER_EMAILS = ["leebyongj@myongji.sen.ms.kr"];
