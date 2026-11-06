@@ -6,7 +6,13 @@
 
 // ① Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹 앱)의 firebaseConfig 값을 그대로 붙여 넣으세요.
 //    채우기 전(null)에는 예시 자료와 ‘직접 입력한 자료’로만 동작해요.
-window.FIREBASE_CONFIG = null;
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCE3JV8xNC5LvCQwFTfJ2piSdghDkUP4GQ",
+  authDomain: "statistics-b1040.firebaseapp.com",
+  projectId: "statistics-b1040",
+  messagingSenderId: "783109914933",
+  appId: "1:783109914933:web:bc48b11bc4f773fda80c7c"
+};
 /* 예시
 window.FIREBASE_CONFIG = {
   apiKey: "AIza...",
