@@ -197,7 +197,7 @@ td.ca{color:var(--a);font-family:var(--f-num)} td.cb{color:var(--b);font-family:
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+<script>/* 설정 파일은 캐시를 쓰지 않고 항상 새로 받아요 */ document.write('<script src="firebase-config.js?v=' + Date.now() + '"><\/script>');</script>
 <script>
 /* ---------- 예시 자료 (수업 시연용, 실제 학생 자료 아님) ---------- */
 const ex = (g, arr) => arr.map((v, i) => ({ v, g, s: i % 2 ? '여' : '남' }));
